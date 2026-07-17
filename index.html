@@ -1381,7 +1381,6 @@
   var bodyAlmond = new THREE.MeshStandardMaterial({ color: 0xece6d8, roughness: 0.5, metalness: 0.1 });
   var doorGlass = new THREE.MeshStandardMaterial({ color: 0x14161b, roughness: 0.12, metalness: 0.3 });
   var chrome = new THREE.MeshStandardMaterial({ color: 0xc9cdd2, roughness: 0.25, metalness: 0.85 });
-  var lidTop = new THREE.MeshStandardMaterial({ color: 0xd7dadd, roughness: 0.3, metalness: 0.6 });
   var panelBlue = new THREE.MeshStandardMaterial({ color: 0x0d5aa7, roughness: 0.5, metalness: 0.2 });
   var knobDark = new THREE.MeshStandardMaterial({ color: 0x22252a, roughness: 0.4, metalness: 0.3 });
   var legMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6 });
@@ -1523,8 +1522,16 @@
     lidPivot.position.set(0, tubY, depth / 2 - lidDepth / 2);
     g.add(lidPivot);
 
-    var lid = new THREE.Mesh(new THREE.BoxGeometry(width * 0.97, lidH, lidDepth), lidTop);
-    lid.position.set(0, lidH / 2, lidDepth / 2);
+    // White, with rounded corners in footprint (extruded up out of the
+    // shape's plane, then rotated so that extrusion becomes the lid's
+    // thickness instead of its width or depth).
+    var lidW = width * 0.97;
+    var lidCorner = Math.min(lidW, lidDepth) * 0.15;
+    var lidShape = roundedRectShape(lidW, lidDepth, lidCorner);
+    var lidGeo = new THREE.ExtrudeGeometry(lidShape, { depth: lidH, bevelEnabled: false, curveSegments: 10 });
+    var lid = new THREE.Mesh(lidGeo, doorWhiteMat);
+    lid.rotation.x = -Math.PI / 2;
+    lid.position.set(0, 0, lidDepth / 2);
     lidPivot.add(lid);
 
     var console_ = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, height * 0.14, 0.08), panelBlue);
