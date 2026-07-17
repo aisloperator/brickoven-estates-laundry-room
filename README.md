@@ -2,7 +2,7 @@
 
 An interactive 3D preview of the Brickoven Estates apartment building laundry room, built with [Three.js](https://threejs.org/).
 
-**Live:** https://aisloperator.github.io/brickoven-estates-laundry-room/
+**Live:** https://www.aisloperator.com/brickoven-estates-laundry-room/
 
 ## What's here
 
@@ -14,7 +14,7 @@ The scene renders:
 - A back wall with a row of 5 Speed Queen-style commercial washers: 2 front-loaders and 3 top-loaders
 - A side wall (at a right angle to the washer wall) with 5 Speed Queen-style dryers: 1 standalone front-loader and a 2×2 array of 4 stacked dryers
 
-Click (or tap) any washer or dryer: a dog walks in through the doorway, opens it, pulls out the laundry, pees on it, breathes fire to incinerate it, then leaves.
+Click (or tap) any washer or dryer: a dog walks in through the doorway, opens it, pulls the laundry into its mouth and shakes it, carries it to the middle of the room and spits it out, pees on it, then breathes fire on it until it burns to nothing, before heading back out.
 
 ## Viewing it
 
