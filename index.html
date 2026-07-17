@@ -1824,6 +1824,10 @@
   var peeMat = new THREE.MeshStandardMaterial({
     color: 0xffe600, transparent: true, opacity: 0.85, roughness: 0.25, emissive: 0x7a6400, emissiveIntensity: 0.6
   });
+  var puddleMat = new THREE.MeshStandardMaterial({
+    color: 0xe0c400, transparent: true, opacity: 0.8, roughness: 0.15, metalness: 0.1,
+    emissive: 0x6b5a00, emissiveIntensity: 0.35
+  });
 
   var sequencer = null;
   var doorwayX = (doorGapStart + doorGapEnd) / 2;
@@ -1872,6 +1876,7 @@
     var openAngle = machineRoot.userData.doorOpenAngle;
 
     var peeStream = null;
+    var puddle = null;
     var laundryFire = null;
     var mouthWorldAtGrab = new THREE.Vector3();
     var spitStartPos = new THREE.Vector3();
@@ -1969,12 +1974,19 @@
           peeStream = cylinderBetween(hipPos, laundryTarget.clone().setY(0.02), 0.012, peeMat);
           scene.add(peeStream);
           peeStream.visible = false;
+
+          puddle = new THREE.Mesh(new THREE.CircleGeometry(0.4, 24), puddleMat);
+          puddle.rotation.x = -Math.PI / 2;
+          puddle.position.set(laundryTarget.x, 0.003, laundryTarget.z);
+          puddle.scale.setScalar(0.001);
+          scene.add(puddle);
         },
         update: function (t) {
           var liftIn = Math.min(1, t / 0.12);
           dog.legBR.rotation.z = -1.1 * (t < 0.85 ? liftIn : liftIn * (1 - (t - 0.85) / 0.15));
           dog.legBR.rotation.x = -0.3 * liftIn;
           if (peeStream) peeStream.visible = t > 0.1 && t < 0.95;
+          puddle.scale.setScalar(Math.max(0.001, t * t * (3 - 2 * t)));
         },
         onEnd: function () {
           dog.legBR.rotation.z = 0;
@@ -2009,6 +2021,7 @@
       {
         duration: 1000,
         onStart: function () {
+          if (puddle) { scene.remove(puddle); puddle.geometry.dispose(); puddle = null; }
           laundryFire = buildFlameCluster('up', 0.75);
           laundryFire.group.position.copy(laundryTarget);
           laundryFire.group.position.y += 0.02;
