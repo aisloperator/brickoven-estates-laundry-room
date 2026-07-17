@@ -431,7 +431,9 @@
     g.userData.isMachineRoot = true;
     g.userData.kind = 'top';
     g.userData.lidPivot = lidPivot;
-    g.userData.doorOpenAngle = -1.6;
+    // Leans forward of vertical (rather than tipping past it) so the open
+    // lid's swept path fully brackets the console's depth, obscuring it.
+    g.userData.doorOpenAngle = -1.35;
     g.userData.doorOpening = doorOpening;
     g.userData.standMarker = standMarker;
 
