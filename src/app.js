@@ -299,7 +299,8 @@
     g.add(drum);
 
     // Door is hinged on its left edge so it can swing open.
-    var doorW = doorR * 1.7, doorH = doorR * 1.95;
+    // Sized (with margin) to fully cover the circular drum hole behind it.
+    var doorW = doorR * 2.6, doorH = doorR * 2.8;
     var doorHalfW = doorStyle === 'rect' ? doorW / 2 : doorR;
     var doorPivot = new THREE.Group();
     doorPivot.position.set(-doorHalfW, doorY, depth + 0.02);
@@ -429,9 +430,9 @@
   function makeStackedDryerColumn(width, depth) {
     var g = new THREE.Group();
     var h1 = 0.98, h2 = 0.95;
-    var bottom = makeFrontLoad(width, h1, depth, bodyWhite);
+    var bottom = makeFrontLoad(width, h1, depth, bodyWhite, 'rect');
     g.add(bottom);
-    var top = makeFrontLoad(width, h2, depth, bodyWhite);
+    var top = makeFrontLoad(width, h2, depth, bodyWhite, 'rect');
     top.position.y = h1 + 0.03;
     g.add(top);
     var seam = new THREE.Mesh(new THREE.BoxGeometry(width + 0.01, 0.03, depth + 0.01), legMat);
@@ -464,7 +465,7 @@
   for (var wi = 0; wi < washerWidths.length; wi++) {
     var unit;
     if (wi < 2) {
-      unit = makeFrontLoad(flW, flH, flD, bodyWhite, 'rect');
+      unit = makeFrontLoad(flW, flH, flD, bodyWhite);
     } else {
       unit = makeTopLoad(tlW, tlH, tlD, bodyAlmond);
     }
@@ -478,7 +479,7 @@
   var dryerWidths = [dfW, dfW, dfW]; // standalone, stack col 1, stack col 2
   var dryerCenters = layoutRow(dryerWidths, 0.35, ROOM_D - 0.35, 0.22);
 
-  var standaloneDryer = makeFrontLoad(dfW, 1.0, dfD, bodyWhite);
+  var standaloneDryer = makeFrontLoad(dfW, 1.0, dfD, bodyWhite, 'rect');
   standaloneDryer.rotation.y = -Math.PI / 2;
   standaloneDryer.position.set(ROOM_W - WALL_T, 0, dryerCenters[0]);
   scene.add(standaloneDryer);
