@@ -254,6 +254,8 @@
     return new THREE.Mesh(geo, mat);
   }
 
+  var drumDarkMat = new THREE.MeshStandardMaterial({ color: 0x08090b, roughness: 0.6 });
+
   // Local convention: appliance footprint centered on X, back face at Z=0, front face at Z=depth, base at Y=0.
   function makeFrontLoad(width, height, depth, bodyMat) {
     var g = new THREE.Group();
@@ -264,15 +266,27 @@
 
     var doorR = Math.min(width, height) * 0.32;
     var doorY = height * 0.42;
+
+    // Dark recessed drum, visible once the door swings open.
+    var drum = new THREE.Mesh(new THREE.CylinderGeometry(doorR - 0.01, doorR - 0.01, 0.02, 24), drumDarkMat);
+    drum.rotation.x = Math.PI / 2;
+    drum.position.set(0, doorY, depth + 0.005);
+    g.add(drum);
+
+    // Door is hinged on its left edge so it can swing open.
+    var doorPivot = new THREE.Group();
+    doorPivot.position.set(-doorR, doorY, depth + 0.02);
+    g.add(doorPivot);
+
     var rim = new THREE.Mesh(new THREE.CylinderGeometry(doorR + 0.035, doorR + 0.035, 0.03, 28), chrome);
     rim.rotation.x = Math.PI / 2;
-    rim.position.set(0, doorY, depth + 0.02);
-    g.add(rim);
+    rim.position.set(doorR, 0, 0);
+    doorPivot.add(rim);
 
     var glass = new THREE.Mesh(new THREE.CylinderGeometry(doorR, doorR, 0.02, 28), doorGlass);
     glass.rotation.x = Math.PI / 2;
-    glass.position.set(0, doorY, depth + 0.035);
-    g.add(glass);
+    glass.position.set(doorR, 0, 0.015);
+    doorPivot.add(glass);
 
     var panelH = height * 0.16;
     var panel = new THREE.Mesh(new THREE.BoxGeometry(width * 0.92, panelH, 0.05), panelBlue);
@@ -292,20 +306,48 @@
       });
     });
 
+    // Markers used by the click-to-play dog animation (not rendered geometry).
+    var doorOpening = new THREE.Object3D();
+    doorOpening.position.set(0, doorY, depth + 0.03);
+    g.add(doorOpening);
+
+    var standMarker = new THREE.Object3D();
+    standMarker.position.set(0, 0, depth + 0.55);
+    g.add(standMarker);
+
+    g.userData.isMachineRoot = true;
+    g.userData.kind = 'front';
+    g.userData.doorPivot = doorPivot;
+    g.userData.doorOpenAngle = -1.9;
+    g.userData.doorOpening = doorOpening;
+    g.userData.standMarker = standMarker;
+
     addShadowFlags(g);
     return g;
   }
 
   function makeTopLoad(width, height, depth, bodyMat) {
     var g = new THREE.Group();
+    var tubY = height * 0.86;
+    var lidH = height * 0.05;
 
-    var cabinet = new THREE.Mesh(new THREE.BoxGeometry(width, height * 0.86, depth), bodyMat);
-    cabinet.position.set(0, (height * 0.86) / 2, depth / 2);
+    var cabinet = new THREE.Mesh(new THREE.BoxGeometry(width, tubY, depth), bodyMat);
+    cabinet.position.set(0, tubY / 2, depth / 2);
     g.add(cabinet);
 
-    var lid = new THREE.Mesh(new THREE.BoxGeometry(width * 0.97, height * 0.05, depth * 0.95), lidTop);
-    lid.position.set(0, height * 0.86 + (height * 0.05) / 2, depth / 2);
-    g.add(lid);
+    var tub = new THREE.Mesh(new THREE.CylinderGeometry(width * 0.4, width * 0.4, 0.03, 24), drumDarkMat);
+    tub.position.set(0, tubY + 0.005, depth / 2);
+    g.add(tub);
+
+    // Lid is hinged along its back edge so it can tilt open.
+    var lidDepth = depth * 0.95;
+    var lidPivot = new THREE.Group();
+    lidPivot.position.set(0, tubY, depth / 2 - lidDepth / 2);
+    g.add(lidPivot);
+
+    var lid = new THREE.Mesh(new THREE.BoxGeometry(width * 0.97, lidH, lidDepth), lidTop);
+    lid.position.set(0, lidH / 2, lidDepth / 2);
+    lidPivot.add(lid);
 
     var console_ = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, height * 0.14, 0.08), panelBlue);
     console_.position.set(0, height * 0.86 + height * 0.05 + (height * 0.14) / 2, depth * 0.12);
@@ -330,6 +372,22 @@
         g.add(leg);
       });
     });
+
+    // Markers used by the click-to-play dog animation (not rendered geometry).
+    var doorOpening = new THREE.Object3D();
+    doorOpening.position.set(0, tubY + 0.06, depth / 2);
+    g.add(doorOpening);
+
+    var standMarker = new THREE.Object3D();
+    standMarker.position.set(0, 0, depth + 0.55);
+    g.add(standMarker);
+
+    g.userData.isMachineRoot = true;
+    g.userData.kind = 'top';
+    g.userData.lidPivot = lidPivot;
+    g.userData.doorOpenAngle = -1.6;
+    g.userData.doorOpening = doorOpening;
+    g.userData.standMarker = standMarker;
 
     addShadowFlags(g);
     return g;
@@ -361,6 +419,9 @@
     return centers;
   }
 
+  // Machines a user can click to trigger the dog animation.
+  var machines = [];
+
   // ---------- place washers on back wall (facing +Z into the room) ----------
   var flW = 0.72, flD = 0.70, flH = 1.00;
   var tlW = 0.68, tlD = 0.68, tlH = 1.05;
@@ -376,6 +437,7 @@
     }
     unit.position.set(washerCenters[wi], 0, WALL_T);
     scene.add(unit);
+    machines.push(unit);
   }
 
   // ---------- place dryers on right wall (facing -X into the room) ----------
@@ -387,12 +449,410 @@
   standaloneDryer.rotation.y = -Math.PI / 2;
   standaloneDryer.position.set(ROOM_W - WALL_T, 0, dryerCenters[0]);
   scene.add(standaloneDryer);
+  machines.push(standaloneDryer);
 
   [1, 2].forEach(function (idx) {
     var col = makeStackedDryerColumn(dfW, dfD);
     col.rotation.y = -Math.PI / 2;
     col.position.set(ROOM_W - WALL_T, 0, dryerCenters[idx]);
     scene.add(col);
+    col.children.forEach(function (child) {
+      if (child.userData && child.userData.isMachineRoot) machines.push(child);
+    });
+  });
+
+  // ---------- click-to-play dog animation ----------
+  // A tiny sequential animator: each step runs for `duration` ms, calling
+  // update(t) every frame with t in [0,1], then onEnd() before the next step.
+  function Sequencer(steps) {
+    this.steps = steps;
+    this.index = 0;
+    this.stepStart = performance.now();
+    this.done = steps.length === 0;
+    if (!this.done && steps[0].onStart) steps[0].onStart();
+  }
+  Sequencer.prototype.tick = function (now) {
+    if (this.done) return;
+    var step = this.steps[this.index];
+    var t = Math.min(1, (now - this.stepStart) / step.duration);
+    step.update(t);
+    if (t >= 1) {
+      if (step.onEnd) step.onEnd();
+      this.index++;
+      if (this.index >= this.steps.length) { this.done = true; return; }
+      this.stepStart = now;
+      var next = this.steps[this.index];
+      if (next.onStart) next.onStart();
+    }
+  };
+
+  function angleLerp(a, b, t) {
+    var d = (((b - a) % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+    return a + d * t;
+  }
+
+  function buildDog() {
+    var furMat = new THREE.MeshStandardMaterial({ color: 0xc98a4b, roughness: 0.85 });
+    var furDarkMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2e, roughness: 0.85 });
+    var blackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4 });
+
+    var dog = new THREE.Group();
+    var hip = 0.22, bodyW = 0.18, bodyH = 0.20, bodyL = 0.46;
+
+    var body = new THREE.Mesh(new THREE.BoxGeometry(bodyW, bodyH, bodyL), furMat);
+    body.position.set(0, hip + bodyH / 2, 0);
+    dog.add(body);
+
+    var neckPivot = new THREE.Group();
+    neckPivot.position.set(0, hip + bodyH * 0.72, bodyL / 2);
+    dog.add(neckPivot);
+
+    var headW = 0.15, headH = 0.14, headD = 0.15;
+    var head = new THREE.Mesh(new THREE.BoxGeometry(headW, headH, headD), furMat);
+    head.position.set(0, headH * 0.15, headD / 2);
+    neckPivot.add(head);
+
+    var snout = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.07, 0.09), furMat);
+    snout.position.set(0, headH * 0.05, headD + 0.045);
+    neckPivot.add(snout);
+
+    [-1, 1].forEach(function (sx) {
+      var ear = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.09, 0.06), furDarkMat);
+      ear.position.set(sx * headW * 0.38, headH * 0.15 + headH * 0.55, headD * 0.35);
+      ear.rotation.z = sx * 0.3;
+      neckPivot.add(ear);
+
+      var eye = new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 8), blackMat);
+      eye.position.set(sx * headW * 0.28, headH * 0.2, headD + 0.01);
+      neckPivot.add(eye);
+    });
+
+    var nose = new THREE.Mesh(new THREE.SphereGeometry(0.018, 8, 8), blackMat);
+    nose.position.set(0, headH * 0.03, headD + 0.09);
+    neckPivot.add(nose);
+
+    // Fire-breath cluster, hidden until the incineration step.
+    var mouthFireGroup = new THREE.Group();
+    mouthFireGroup.position.set(0, headH * 0.02, headD + 0.09);
+    neckPivot.add(mouthFireGroup);
+    var flameSpecs = [
+      { r: 0.035, h: 0.32, color: 0xfff2a8, opacity: 0.95 },
+      { r: 0.055, h: 0.5, color: 0xff8c1a, opacity: 0.75 },
+      { r: 0.075, h: 0.68, color: 0xff4400, opacity: 0.5 }
+    ];
+    flameSpecs.forEach(function (spec) {
+      var mat = new THREE.MeshBasicMaterial({
+        color: spec.color, transparent: true, opacity: spec.opacity,
+        blending: THREE.AdditiveBlending, depthWrite: false
+      });
+      var cone = new THREE.Mesh(new THREE.ConeGeometry(spec.r, spec.h, 10), mat);
+      cone.rotation.x = Math.PI / 2;
+      cone.position.z = spec.h / 2;
+      mouthFireGroup.add(cone);
+    });
+    mouthFireGroup.visible = false;
+
+    function makeLeg(sx, sz) {
+      var pivot = new THREE.Group();
+      pivot.position.set(sx * (bodyW / 2 - 0.015), hip, sz * (bodyL * 0.32));
+      dog.add(pivot);
+      var leg = new THREE.Mesh(new THREE.BoxGeometry(0.045, hip, 0.05), furDarkMat);
+      leg.position.set(0, -hip / 2, 0);
+      pivot.add(leg);
+      var paw = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.03, 0.07), blackMat);
+      paw.position.set(0, -hip + 0.015, 0.01);
+      pivot.add(paw);
+      return pivot;
+    }
+    var legFL = makeLeg(1, 1), legFR = makeLeg(-1, 1), legBL = makeLeg(1, -1), legBR = makeLeg(-1, -1);
+
+    var tailPivot = new THREE.Group();
+    tailPivot.position.set(0, hip + bodyH * 0.78, -bodyL / 2);
+    tailPivot.rotation.x = -0.4;
+    dog.add(tailPivot);
+    var tail = new THREE.Mesh(new THREE.ConeGeometry(0.032, 0.26, 8), furDarkMat);
+    tail.rotation.x = -Math.PI / 2;
+    tail.position.z = -0.13;
+    tailPivot.add(tail);
+
+    addShadowFlags(dog);
+    dog.visible = false;
+    scene.add(dog);
+
+    return {
+      root: dog,
+      neckPivot: neckPivot,
+      legFL: legFL, legFR: legFR, legBL: legBL, legBR: legBR,
+      tailPivot: tailPivot,
+      mouthFireGroup: mouthFireGroup
+    };
+  }
+  var dog = buildDog();
+
+  function setLegs(swing) {
+    dog.legFL.rotation.x = swing;
+    dog.legBR.rotation.x = swing;
+    dog.legFR.rotation.x = -swing;
+    dog.legBL.rotation.x = -swing;
+  }
+
+  function walkStep(from, to, heading, speed) {
+    var dist = from.distanceTo(to);
+    var duration = Math.max(280, (dist / speed) * 1000);
+    var strideLen = 0.5;
+    var numStrides = Math.max(1, Math.round(dist / strideLen));
+    return {
+      duration: duration,
+      onStart: function () { dog.root.visible = true; },
+      update: function (t) {
+        dog.root.position.set(from.x + (to.x - from.x) * t, 0, from.z + (to.z - from.z) * t);
+        dog.root.rotation.y = heading;
+        var phase = t * numStrides * Math.PI * 2;
+        setLegs(Math.sin(phase) * 0.55);
+        dog.root.position.y = Math.abs(Math.sin(phase)) * 0.015;
+        dog.tailPivot.rotation.y = Math.sin(phase * 1.3) * 0.45;
+        dog.neckPivot.rotation.x = Math.sin(phase) * 0.04;
+      }
+    };
+  }
+
+  function turnStep(heading0, heading1, duration) {
+    return {
+      duration: duration || 260,
+      update: function (t) {
+        dog.root.rotation.y = angleLerp(heading0, heading1, t);
+        setLegs(0);
+        dog.tailPivot.rotation.y = Math.sin(t * Math.PI * 4) * 0.3;
+      }
+    };
+  }
+
+  function createLaundryPile() {
+    var g = new THREE.Group();
+    var colors = [0xd94f4f, 0x3f7cd6, 0xf2f2ef, 0x4fae5c, 0xe0c23c, 0x9a5fc9];
+    var n = 5;
+    for (var i = 0; i < n; i++) {
+      var s = 0.09 + Math.random() * 0.06;
+      var mat = new THREE.MeshStandardMaterial({
+        color: colors[Math.floor(Math.random() * colors.length)], roughness: 0.85
+      });
+      var piece = new THREE.Mesh(new THREE.BoxGeometry(s, s * 0.7, s * 1.1), mat);
+      var ang = (i / n) * Math.PI * 2;
+      piece.position.set(Math.cos(ang) * 0.06, s * 0.35 + i * 0.015, Math.sin(ang) * 0.06);
+      piece.rotation.set(Math.random() * 1, Math.random() * Math.PI * 2, Math.random() * 1);
+      g.add(piece);
+    }
+    addShadowFlags(g);
+    return g;
+  }
+
+  var scorchMarks = [];
+  function addScorchMark(pos) {
+    var geo = new THREE.CircleGeometry(0.32, 20);
+    var mat = new THREE.MeshBasicMaterial({ color: 0x1a1611, transparent: true, opacity: 0.5 });
+    var mark = new THREE.Mesh(geo, mat);
+    mark.rotation.x = -Math.PI / 2;
+    mark.position.set(pos.x, 0.002, pos.z);
+    scene.add(mark);
+    scorchMarks.push(mark);
+    if (scorchMarks.length > 16) {
+      var old = scorchMarks.shift();
+      scene.remove(old);
+      old.geometry.dispose();
+      old.material.dispose();
+    }
+  }
+
+  function cylinderBetween(p1, p2, radius, material) {
+    var dir = new THREE.Vector3().subVectors(p2, p1);
+    var len = Math.max(0.01, dir.length());
+    var geo = new THREE.CylinderGeometry(radius, radius, len, 8);
+    var mesh = new THREE.Mesh(geo, material);
+    var mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+    mesh.position.copy(mid);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+    return mesh;
+  }
+
+  var peeMat = new THREE.MeshStandardMaterial({
+    color: 0xe8d24a, transparent: true, opacity: 0.8, roughness: 0.3, emissive: 0x554800, emissiveIntensity: 0.3
+  });
+
+  var sequencer = null;
+  var doorwayX = (doorGapStart + doorGapEnd) / 2;
+
+  function startDogShow(machineRoot) {
+    if (sequencer && !sequencer.done) return;
+
+    var kind = machineRoot.userData.kind;
+    var doorOpeningPos = new THREE.Vector3();
+    machineRoot.userData.doorOpening.getWorldPosition(doorOpeningPos);
+    var standPos = new THREE.Vector3();
+    machineRoot.userData.standMarker.getWorldPosition(standPos);
+    standPos.y = 0;
+    var machineHeading = machineRoot.rotation.y + Math.PI;
+    var laundryTarget = doorOpeningPos.clone().lerp(standPos, 0.5);
+    laundryTarget.y = 0;
+
+    var outsidePos = new THREE.Vector3(doorwayX, 0, -1.3);
+    var doorwayPos = new THREE.Vector3(doorwayX, 0, 0.35);
+
+    var enterHeading = Math.atan2(doorwayPos.x - outsidePos.x, doorwayPos.z - outsidePos.z);
+    var approachHeading = Math.atan2(standPos.x - doorwayPos.x, standPos.z - doorwayPos.z);
+    var exitHeadingA = Math.atan2(doorwayPos.x - standPos.x, doorwayPos.z - standPos.z);
+    var exitHeadingB = Math.atan2(outsidePos.x - doorwayPos.x, outsidePos.z - doorwayPos.z);
+
+    var laundry = createLaundryPile();
+    laundry.visible = false;
+    laundry.position.copy(doorOpeningPos);
+    laundry.scale.setScalar(0.001);
+    scene.add(laundry);
+
+    var openPivot = kind === 'front' ? machineRoot.userData.doorPivot : machineRoot.userData.lidPivot;
+    var openAxis = kind === 'front' ? 'y' : 'x';
+    var openAngle = machineRoot.userData.doorOpenAngle;
+
+    var peeStream = null;
+
+    var steps = [
+      walkStep(outsidePos, doorwayPos, enterHeading, 1.6),
+      walkStep(doorwayPos, standPos, approachHeading, 1.6),
+      turnStep(approachHeading, machineHeading, 260),
+
+      // Open the door / lid.
+      {
+        duration: 550,
+        update: function (t) {
+          var e = t * t * (3 - 2 * t);
+          openPivot.rotation[openAxis] = openAngle * e;
+          dog.neckPivot.rotation.x = 0.35 * e;
+        }
+      },
+
+      // Pull the laundry out onto the floor.
+      {
+        duration: 700,
+        onStart: function () { laundry.visible = true; },
+        update: function (t) {
+          var e = t * t * (3 - 2 * t);
+          laundry.position.lerpVectors(doorOpeningPos, laundryTarget, e);
+          laundry.position.y = Math.sin(e * Math.PI) * 0.25;
+          laundry.scale.setScalar(0.001 + e * 0.999);
+          laundry.rotation.y = e * 3.2;
+          dog.neckPivot.rotation.x = 0.3 - 0.3 * e;
+        },
+        onEnd: function () { laundry.position.copy(laundryTarget); laundry.rotation.y = 0; }
+      },
+
+      // Lift a leg and pee on the pile.
+      {
+        duration: 700,
+        onStart: function () {
+          var hipPos = new THREE.Vector3();
+          dog.legBR.getWorldPosition(hipPos);
+          hipPos.y = 0.16;
+          peeStream = cylinderBetween(hipPos, laundryTarget.clone().setY(0.02), 0.012, peeMat);
+          scene.add(peeStream);
+          peeStream.visible = false;
+        },
+        update: function (t) {
+          var liftIn = Math.min(1, t / 0.25);
+          dog.legBR.rotation.z = -1.1 * (t < 0.8 ? liftIn : liftIn * (1 - (t - 0.8) / 0.2));
+          dog.legBR.rotation.x = -0.3 * liftIn;
+          if (peeStream) peeStream.visible = t > 0.22 && t < 0.92;
+        },
+        onEnd: function () {
+          dog.legBR.rotation.z = 0;
+          dog.legBR.rotation.x = 0;
+          if (peeStream) { scene.remove(peeStream); peeStream.geometry.dispose(); peeStream = null; }
+        }
+      },
+
+      // Breathe fire and incinerate the pile.
+      {
+        duration: 950,
+        onStart: function () {
+          dog.mouthFireGroup.visible = true;
+          dog.neckPivot.rotation.x = 0.35;
+        },
+        update: function (t) {
+          dog.mouthFireGroup.children.forEach(function (cone, i) {
+            var j = 0.85 + Math.random() * 0.3;
+            cone.scale.set(j, j, 0.9 + Math.random() * 0.3);
+          });
+          if (t > 0.15) {
+            var burn = Math.max(0, 1 - (t - 0.15) / 0.8);
+            laundry.scale.setScalar(Math.max(0.001, burn));
+            laundry.position.y = laundryTarget.y + (1 - burn) * -0.02;
+            laundry.rotation.y += 0.15;
+          }
+        },
+        onEnd: function () {
+          dog.mouthFireGroup.visible = false;
+          scene.remove(laundry);
+          laundry.traverse(function (o) { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } });
+          addScorchMark(laundryTarget);
+          dog.neckPivot.rotation.x = 0;
+        }
+      },
+
+      // Close up and head out.
+      {
+        duration: 400,
+        update: function (t) {
+          var e = 1 - t;
+          openPivot.rotation[openAxis] = openAngle * e * e;
+        }
+      },
+      turnStep(machineHeading, exitHeadingA, 260),
+      walkStep(standPos, doorwayPos, exitHeadingA, 1.7),
+      turnStep(exitHeadingA, exitHeadingB, 200)
+    ];
+    var finalWalk = walkStep(doorwayPos, outsidePos, exitHeadingB, 1.7);
+    finalWalk.onEnd = function () { dog.root.visible = false; };
+    steps.push(finalWalk);
+
+    sequencer = new Sequencer(steps);
+  }
+
+  // ---------- click / tap detection on machines ----------
+  var raycaster = new THREE.Raycaster();
+  var pointerNDC = new THREE.Vector2();
+  var pointerDownInfo = null;
+
+  function machineFromIntersect(hits) {
+    if (!hits.length) return null;
+    var obj = hits[0].object;
+    while (obj && !(obj.userData && obj.userData.isMachineRoot)) obj = obj.parent;
+    return obj;
+  }
+
+  function pick(clientX, clientY) {
+    var rect = renderer.domElement.getBoundingClientRect();
+    pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointerNDC, camera);
+    return machineFromIntersect(raycaster.intersectObjects(machines, true));
+  }
+
+  renderer.domElement.addEventListener('pointerdown', function (e) {
+    pointerDownInfo = { x: e.clientX, y: e.clientY, t: performance.now() };
+  });
+  renderer.domElement.addEventListener('pointerup', function (e) {
+    if (!pointerDownInfo) return;
+    var dx = e.clientX - pointerDownInfo.x, dy = e.clientY - pointerDownInfo.y;
+    var moved = Math.sqrt(dx * dx + dy * dy);
+    var elapsed = performance.now() - pointerDownInfo.t;
+    pointerDownInfo = null;
+    if (moved > 6 || elapsed > 600) return; // was a drag/orbit, not a tap
+    if (sequencer && !sequencer.done) return;
+    var hit = pick(e.clientX, e.clientY);
+    if (hit) startDogShow(hit);
+  });
+  renderer.domElement.addEventListener('pointermove', function (e) {
+    if (sequencer && !sequencer.done) { renderer.domElement.style.cursor = 'default'; return; }
+    var hit = pick(e.clientX, e.clientY);
+    renderer.domElement.style.cursor = hit ? 'pointer' : 'default';
   });
 
   // ---------- controls ----------
@@ -421,6 +881,7 @@
   function animate() {
     requestAnimationFrame(animate);
     controls.update();
+    if (sequencer && !sequencer.done) sequencer.tick(performance.now());
     renderer.render(scene, camera);
   }
   animate();
