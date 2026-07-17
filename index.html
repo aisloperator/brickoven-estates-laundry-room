@@ -2021,7 +2021,6 @@
       {
         duration: 1000,
         onStart: function () {
-          if (puddle) { scene.remove(puddle); puddle.geometry.dispose(); puddle = null; }
           laundryFire = buildFlameCluster('up', 0.75);
           laundryFire.group.position.copy(laundryTarget);
           laundryFire.group.position.y += 0.02;
@@ -2036,6 +2035,17 @@
           var burn = Math.max(0.001, 1 - t);
           laundry.scale.setScalar(burn);
           laundry.rotation.y += 0.18;
+
+          // The puddle shrinks rapidly and is gone by the halfway point.
+          if (puddle) {
+            if (t >= 0.5) {
+              scene.remove(puddle);
+              puddle.geometry.dispose();
+              puddle = null;
+            } else {
+              puddle.scale.setScalar(Math.max(0.001, 1 - t / 0.5));
+            }
+          }
         },
         onEnd: function () {
           scene.remove(laundry);
