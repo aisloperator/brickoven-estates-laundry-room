@@ -375,9 +375,11 @@
 
     // Console position/size, worked out first: the lid hinge and drum are
     // both placed relative to it so the open lid ends up directly in front
-    // of the console instead of just swinging up and away from it.
+    // of the console instead of just swinging up and away from it. Pushed
+    // close to the cabinet's back edge to leave as much depth as possible
+    // for the (approximately square) lid in front of it.
     var consoleY = tubY + height * 0.05 + (height * 0.14) / 2;
-    var consoleZ = depth * 0.12;
+    var consoleZ = depth * 0.07;
     var consoleD = 0.08;
     var consoleFrontZ = consoleZ + consoleD / 2;
 
@@ -385,10 +387,9 @@
     // thickness, so it doesn't clip into it) rather than at the cabinet's
     // back edge. Rotating almost exactly to vertical then leaves the whole
     // lid standing as a flat panel right in front of the console, at
-    // roughly the hinge's z position, obscuring it. Smaller than before so
-    // it doesn't overhang the cabinet's front edge from this further-back
-    // hinge position.
-    var lidDepth = depth * 0.42;
+    // roughly the hinge's z position, obscuring it.
+    var lidW = width * 0.97;
+    var lidDepth = lidW * 0.85; // approximately square, tied to width rather than cabinet depth
     var hingeZ = consoleFrontZ + lidH + 0.01;
     var lidPivot = new THREE.Group();
     lidPivot.position.set(0, tubY, hingeZ);
@@ -397,7 +398,6 @@
     // White, with rounded corners in footprint (extruded up out of the
     // shape's plane, then rotated so that extrusion becomes the lid's
     // thickness instead of its width or depth).
-    var lidW = width * 0.97;
     var lidCorner = Math.min(lidW, lidDepth) * 0.15;
     var lidShape = roundedRectShape(lidW, lidDepth, lidCorner);
     var lidGeo = new THREE.ExtrudeGeometry(lidShape, { depth: lidH, bevelEnabled: false, curveSegments: 10 });
@@ -406,8 +406,9 @@
     lid.position.set(0, 0, lidDepth / 2);
     lidPivot.add(lid);
 
-    // Drum sized/centered to fit fully under the (now smaller) lid.
-    var drumR = Math.min(lidDepth, lidW) * 0.42;
+    // Large drum — only slightly smaller than the lid's own width/depth —
+    // sized/centered to fit fully under it.
+    var drumR = Math.min(lidDepth, lidW) * 0.46;
     var tub = new THREE.Mesh(new THREE.CylinderGeometry(drumR, drumR, 0.03, 24), drumDarkMat);
     tub.position.set(0, tubY + 0.005, hingeZ + lidDepth / 2);
     g.add(tub);
@@ -490,7 +491,10 @@
 
   // ---------- place washers on back wall (facing +Z into the room) ----------
   var flW = 0.72, flD = 0.70, flH = 1.00;
-  var tlW = 0.68, tlD = 0.68, tlH = 1.05;
+  // Deeper than a front-loader: the top-load lid needs to be roughly
+  // square (see makeTopLoad) and still clear its hinge, which sits in
+  // front of the console rather than at the cabinet's back edge.
+  var tlW = 0.68, tlD = 0.8, tlH = 1.05;
   var washerWidths = [flW, flW, tlW, tlW, tlW];
   var washerCenters = layoutRow(washerWidths, 0.35, doorGapStart - 0.25, 0.16);
 
