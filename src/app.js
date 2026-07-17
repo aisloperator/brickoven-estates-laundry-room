@@ -373,14 +373,25 @@
     cabinet.position.set(0, tubY / 2, depth / 2);
     g.add(cabinet);
 
-    var tub = new THREE.Mesh(new THREE.CylinderGeometry(width * 0.4, width * 0.4, 0.03, 24), drumDarkMat);
-    tub.position.set(0, tubY + 0.005, depth / 2);
-    g.add(tub);
+    // Console position/size, worked out first: the lid hinge and drum are
+    // both placed relative to it so the open lid ends up directly in front
+    // of the console instead of just swinging up and away from it.
+    var consoleY = tubY + height * 0.05 + (height * 0.14) / 2;
+    var consoleZ = depth * 0.12;
+    var consoleD = 0.08;
+    var consoleFrontZ = consoleZ + consoleD / 2;
 
-    // Lid is hinged along its back edge so it can tilt open.
-    var lidDepth = depth * 0.95;
+    // Lid is hinged just in front of the console (offset by the lid's own
+    // thickness, so it doesn't clip into it) rather than at the cabinet's
+    // back edge. Rotating almost exactly to vertical then leaves the whole
+    // lid standing as a flat panel right in front of the console, at
+    // roughly the hinge's z position, obscuring it. Smaller than before so
+    // it doesn't overhang the cabinet's front edge from this further-back
+    // hinge position.
+    var lidDepth = depth * 0.42;
+    var hingeZ = consoleFrontZ + lidH + 0.01;
     var lidPivot = new THREE.Group();
-    lidPivot.position.set(0, tubY, depth / 2 - lidDepth / 2);
+    lidPivot.position.set(0, tubY, hingeZ);
     g.add(lidPivot);
 
     // White, with rounded corners in footprint (extruded up out of the
@@ -395,18 +406,24 @@
     lid.position.set(0, 0, lidDepth / 2);
     lidPivot.add(lid);
 
-    var console_ = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, height * 0.14, 0.08), panelBlue);
-    console_.position.set(0, height * 0.86 + height * 0.05 + (height * 0.14) / 2, depth * 0.12);
+    // Drum sized/centered to fit fully under the (now smaller) lid.
+    var drumR = Math.min(lidDepth, lidW) * 0.42;
+    var tub = new THREE.Mesh(new THREE.CylinderGeometry(drumR, drumR, 0.03, 24), drumDarkMat);
+    tub.position.set(0, tubY + 0.005, hingeZ + lidDepth / 2);
+    g.add(tub);
+
+    var console_ = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, height * 0.14, consoleD), panelBlue);
+    console_.position.set(0, consoleY, consoleZ);
     g.add(console_);
 
     var decal = decalPlane(width * 0.75, height * 0.1);
-    decal.position.set(0, height * 0.86 + height * 0.05 + (height * 0.14) / 2, depth * 0.12 + 0.045);
+    decal.position.set(0, consoleY, consoleZ + 0.045);
     g.add(decal);
 
     for (var i = -1; i <= 1; i++) {
       var knob = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.03, 16), knobDark);
       knob.rotation.x = Math.PI / 2;
-      knob.position.set(i * width * 0.22, height * 0.86 + height * 0.05 + (height * 0.14) / 2, depth * 0.12 + 0.05);
+      knob.position.set(i * width * 0.22, consoleY, consoleZ + 0.05);
       g.add(knob);
     }
 
@@ -421,7 +438,7 @@
 
     // Markers used by the click-to-play dog animation (not rendered geometry).
     var doorOpening = new THREE.Object3D();
-    doorOpening.position.set(0, tubY + 0.06, depth / 2);
+    doorOpening.position.set(0, tubY + 0.06, hingeZ + lidDepth / 2);
     g.add(doorOpening);
 
     var standMarker = new THREE.Object3D();
@@ -431,9 +448,10 @@
     g.userData.isMachineRoot = true;
     g.userData.kind = 'top';
     g.userData.lidPivot = lidPivot;
-    // Leans forward of vertical (rather than tipping past it) so the open
-    // lid's swept path fully brackets the console's depth, obscuring it.
-    g.userData.doorOpenAngle = -1.35;
+    // Exactly vertical: at this angle the whole lid becomes a flat panel
+    // sitting right at the hinge's z position (see hingeZ above), standing
+    // directly in front of the console and obscuring it.
+    g.userData.doorOpenAngle = -Math.PI / 2;
     g.userData.doorOpening = doorOpening;
     g.userData.standMarker = standMarker;
 
