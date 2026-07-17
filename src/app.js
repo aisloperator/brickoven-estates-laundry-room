@@ -494,17 +494,21 @@
   // orient 'z' = cones point forward (mouth breath), 'up' = cones point up (ground fire).
   function buildFlameCluster(orient, scaleMul) {
     scaleMul = scaleMul || 1;
+    // Normal (non-additive) blending so the flame reads as solid orange/red
+    // instead of adding onto the bright background and washing out toward
+    // white. Explicit renderOrder keeps the orange core stably drawn on top
+    // of the red outer cone regardless of camera angle.
     var specs = [
-      { r: 0.045 * scaleMul, h: 0.38 * scaleMul, color: 0xff6a1a, opacity: 0.7 },
-      { r: 0.085 * scaleMul, h: 0.66 * scaleMul, color: 0xc41400, opacity: 0.72 }
+      { r: 0.085 * scaleMul, h: 0.66 * scaleMul, color: 0xd22600, opacity: 0.92, renderOrder: 0 },
+      { r: 0.05 * scaleMul, h: 0.42 * scaleMul, color: 0xff7a00, opacity: 0.95, renderOrder: 1 }
     ];
     var group = new THREE.Group();
     var cones = specs.map(function (spec) {
       var mat = new THREE.MeshBasicMaterial({
-        color: spec.color, transparent: true, opacity: spec.opacity,
-        blending: THREE.AdditiveBlending, depthWrite: false
+        color: spec.color, transparent: true, opacity: spec.opacity, depthWrite: false
       });
       var cone = new THREE.Mesh(new THREE.ConeGeometry(spec.r, spec.h, 10), mat);
+      cone.renderOrder = spec.renderOrder;
       if (orient === 'z') {
         cone.rotation.x = Math.PI / 2;
         cone.position.z = spec.h / 2;
@@ -660,23 +664,6 @@
     }
     addShadowFlags(g);
     return g;
-  }
-
-  var scorchMarks = [];
-  function addScorchMark(pos) {
-    var geo = new THREE.CircleGeometry(0.32, 20);
-    var mat = new THREE.MeshBasicMaterial({ color: 0x1a1611, transparent: true, opacity: 0.5 });
-    var mark = new THREE.Mesh(geo, mat);
-    mark.rotation.x = -Math.PI / 2;
-    mark.position.set(pos.x, 0.002, pos.z);
-    scene.add(mark);
-    scorchMarks.push(mark);
-    if (scorchMarks.length > 16) {
-      var old = scorchMarks.shift();
-      scene.remove(old);
-      old.geometry.dispose();
-      old.material.dispose();
-    }
   }
 
   function cylinderBetween(p1, p2, radius, material) {
@@ -898,7 +885,6 @@
           laundry.traverse(function (o) { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } });
           scene.remove(laundryFire.group);
           laundryFire.group.traverse(function (o) { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } });
-          addScorchMark(laundryTarget);
         }
       },
 
