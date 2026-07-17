@@ -931,14 +931,15 @@
           laundry.scale.setScalar(burn);
           laundry.rotation.y += 0.18;
 
-          // The puddle shrinks rapidly and is gone by the halfway point.
+          // The puddle rushes away fast, gone well before the laundry is.
           if (puddle) {
-            if (t >= 0.5) {
+            var puddleWindow = 0.22;
+            if (t >= puddleWindow) {
               scene.remove(puddle);
               puddle.geometry.dispose();
               puddle = null;
             } else {
-              puddle.scale.setScalar(Math.max(0.001, 1 - t / 0.5));
+              puddle.scale.setScalar(Math.max(0.001, 1 - Math.sqrt(t / puddleWindow)));
             }
           }
         },
