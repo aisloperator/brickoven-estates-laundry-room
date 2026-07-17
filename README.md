@@ -2,6 +2,8 @@
 
 An interactive 3D preview of the Brickoven Estates apartment building laundry room, built with [Three.js](https://threejs.org/).
 
+**Live:** https://aisloperator.github.io/brickoven-estates-laundry-room/
+
 ## What's here
 
 `index.html` is a single, self-contained HTML file — Three.js and OrbitControls are inlined directly into the page, so it runs entirely offline in a browser with no build step, server, or network access required.
