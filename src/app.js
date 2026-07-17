@@ -260,9 +260,29 @@
   }
 
   var drumDarkMat = new THREE.MeshStandardMaterial({ color: 0x08090b, roughness: 0.6 });
+  var doorWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf4f4f2, roughness: 0.4, metalness: 0.08 });
+
+  // A rounded-rectangle outline centered on its own origin, for the flat
+  // washer door panel (ShapeGeometry gives it a +Z-facing normal already,
+  // matching how the round door/glass discs are oriented).
+  function roundedRectShape(w, h, r) {
+    var x = -w / 2, y = -h / 2;
+    var shape = new THREE.Shape();
+    shape.moveTo(x, y + r);
+    shape.lineTo(x, y + h - r);
+    shape.quadraticCurveTo(x, y + h, x + r, y + h);
+    shape.lineTo(x + w - r, y + h);
+    shape.quadraticCurveTo(x + w, y + h, x + w, y + h - r);
+    shape.lineTo(x + w, y + r);
+    shape.quadraticCurveTo(x + w, y, x + w - r, y);
+    shape.lineTo(x + r, y);
+    shape.quadraticCurveTo(x, y, x, y + r);
+    return shape;
+  }
 
   // Local convention: appliance footprint centered on X, back face at Z=0, front face at Z=depth, base at Y=0.
-  function makeFrontLoad(width, height, depth, bodyMat) {
+  // doorStyle: 'round' (default, chrome-rimmed glass circle) or 'rect' (white rounded-rectangle panel).
+  function makeFrontLoad(width, height, depth, bodyMat, doorStyle) {
     var g = new THREE.Group();
 
     var cabinet = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), bodyMat);
@@ -279,19 +299,27 @@
     g.add(drum);
 
     // Door is hinged on its left edge so it can swing open.
+    var doorW = doorR * 1.7, doorH = doorR * 1.95;
+    var doorHalfW = doorStyle === 'rect' ? doorW / 2 : doorR;
     var doorPivot = new THREE.Group();
-    doorPivot.position.set(-doorR, doorY, depth + 0.02);
+    doorPivot.position.set(-doorHalfW, doorY, depth + 0.02);
     g.add(doorPivot);
 
-    var rim = new THREE.Mesh(new THREE.CylinderGeometry(doorR + 0.035, doorR + 0.035, 0.03, 28), chrome);
-    rim.rotation.x = Math.PI / 2;
-    rim.position.set(doorR, 0, 0);
-    doorPivot.add(rim);
+    if (doorStyle === 'rect') {
+      var doorPanel = new THREE.Mesh(new THREE.ShapeGeometry(roundedRectShape(doorW, doorH, doorR * 0.4), 12), doorWhiteMat);
+      doorPanel.position.set(doorHalfW, 0, 0);
+      doorPivot.add(doorPanel);
+    } else {
+      var rim = new THREE.Mesh(new THREE.CylinderGeometry(doorR + 0.035, doorR + 0.035, 0.03, 28), chrome);
+      rim.rotation.x = Math.PI / 2;
+      rim.position.set(doorR, 0, 0);
+      doorPivot.add(rim);
 
-    var glass = new THREE.Mesh(new THREE.CylinderGeometry(doorR, doorR, 0.02, 28), doorGlass);
-    glass.rotation.x = Math.PI / 2;
-    glass.position.set(doorR, 0, 0.015);
-    doorPivot.add(glass);
+      var glass = new THREE.Mesh(new THREE.CylinderGeometry(doorR, doorR, 0.02, 28), doorGlass);
+      glass.rotation.x = Math.PI / 2;
+      glass.position.set(doorR, 0, 0.015);
+      doorPivot.add(glass);
+    }
 
     var panelH = height * 0.16;
     var panel = new THREE.Mesh(new THREE.BoxGeometry(width * 0.92, panelH, 0.05), panelBlue);
@@ -436,7 +464,7 @@
   for (var wi = 0; wi < washerWidths.length; wi++) {
     var unit;
     if (wi < 2) {
-      unit = makeFrontLoad(flW, flH, flD, bodyWhite);
+      unit = makeFrontLoad(flW, flH, flD, bodyWhite, 'rect');
     } else {
       unit = makeTopLoad(tlW, tlH, tlD, bodyAlmond);
     }
