@@ -495,8 +495,8 @@
   function buildFlameCluster(orient, scaleMul) {
     scaleMul = scaleMul || 1;
     var specs = [
-      { r: 0.05 * scaleMul, h: 0.42 * scaleMul, color: 0xff9a1a, opacity: 0.8 },
-      { r: 0.075 * scaleMul, h: 0.62 * scaleMul, color: 0xd42c0a, opacity: 0.55 }
+      { r: 0.045 * scaleMul, h: 0.38 * scaleMul, color: 0xff6a1a, opacity: 0.7 },
+      { r: 0.085 * scaleMul, h: 0.66 * scaleMul, color: 0xc41400, opacity: 0.72 }
     ];
     var group = new THREE.Group();
     var cones = specs.map(function (spec) {
@@ -718,14 +718,16 @@
       ROOM_D * 0.5 + (Math.random() - 0.5) * 1.4
     );
     var carryHeading = Math.atan2(randomSpot.x - standPos.x, randomSpot.z - standPos.z);
-    var laundryTarget = randomSpot.clone().add(
-      new THREE.Vector3(Math.sin(carryHeading), 0, Math.cos(carryHeading)).multiplyScalar(0.32)
-    );
+    var forwardVec = new THREE.Vector3(Math.sin(carryHeading), 0, Math.cos(carryHeading));
+    var laundryTarget = randomSpot.clone().add(forwardVec.clone().multiplyScalar(0.32));
     laundryTarget.y = 0;
+    // Where the dog backs up to before breathing fire, still facing the laundry.
+    var backUpPos = randomSpot.clone().add(forwardVec.clone().multiplyScalar(-0.55));
+    backUpPos.y = 0;
 
     var enterHeading = Math.atan2(doorwayPos.x - outsidePos.x, doorwayPos.z - outsidePos.z);
     var approachHeading = Math.atan2(standPos.x - doorwayPos.x, standPos.z - doorwayPos.z);
-    var exitHeadingA = Math.atan2(doorwayPos.x - randomSpot.x, doorwayPos.z - randomSpot.z);
+    var exitHeadingA = Math.atan2(doorwayPos.x - backUpPos.x, doorwayPos.z - backUpPos.z);
     var exitHeadingB = Math.atan2(outsidePos.x - doorwayPos.x, outsidePos.z - doorwayPos.z);
 
     var laundry = createLaundryPile();
@@ -850,6 +852,9 @@
         }
       },
 
+      // Back up a step, still facing the laundry, before breathing fire on it.
+      walkStep(randomSpot, backUpPos, carryHeading, 1.1),
+
       // Breathe red-and-orange fire for 1 second.
       {
         duration: 1000,
@@ -906,7 +911,7 @@
         }
       },
       turnStep(carryHeading, exitHeadingA, 260),
-      walkStep(randomSpot, doorwayPos, exitHeadingA, 1.7),
+      walkStep(backUpPos, doorwayPos, exitHeadingA, 1.7),
       turnStep(exitHeadingA, exitHeadingB, 200)
     ];
     var finalWalk = walkStep(doorwayPos, outsidePos, exitHeadingB, 1.7);
