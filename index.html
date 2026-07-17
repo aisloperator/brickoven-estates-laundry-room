@@ -1169,10 +1169,12 @@
   var WALL_T = 0.15;
 
   var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  // Pulled back a little further and aimed a little more toward the
-  // rightmost washer (near the doorway) than dead-center, while staying
-  // wide enough to keep every machine in frame.
-  camera.position.set(ROOM_W * 0.82, 3.3, ROOM_D * 2.15);
+  // Positioned off to the open front-left of the room, elevated, looking
+  // back across it toward the doorway — see the controls.target comment
+  // below for why. Kept off to the left and pulled back this far so the
+  // leftmost washer still clears the frame even though the look-at point
+  // is well off-center (near the doorway, not room-center).
+  camera.position.set(ROOM_W * 0.32, 5.0, ROOM_D * 2.5);
 
   // ---------- lights ----------
   var hemi = new THREE.HemisphereLight(0xf3ede2, 0x8a6a4a, 0.65);
@@ -2091,9 +2093,10 @@
 
   // ---------- controls ----------
   var controls = new THREE.OrbitControls(camera, renderer.domElement);
-  // Nudged from dead room-center toward the rightmost washer (the last one
-  // in washerCenters, by the doorway) to match the initial camera framing.
-  controls.target.set(washerCenters[washerCenters.length - 1] - 0.2, 1.0, ROOM_D * 0.42);
+  // Framed on the left doorway post (doorGapStart), low enough to tilt the
+  // view down and show the tops of the washers, at a depth that keeps every
+  // machine's front on screen alongside it.
+  controls.target.set(doorGapStart, 0.45, ROOM_D * 0.37);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.minDistance = 1.5;
