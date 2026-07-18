@@ -89,7 +89,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T04:16:01Z</span></a>
+<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T04:26:55Z</span></a>
 <div id="hint">Drag to orbit &middot; scroll or pinch to zoom &middot; right-drag or two-finger drag to pan &middot; click a machine to see what happens</div>
 <div id="fallback"><div>Your browser could not start WebGL, which this 3D room preview requires.<br>Please try the latest version of Chrome, Firefox, or Safari.</div></div>
 <script>
@@ -1304,30 +1304,56 @@
     return tex;
   }
 
-  function createPosterTexture() {
-    // Portrait, matching the 3ft x 4ft (3:4) poster it's mapped onto.
+  // Generic poster texture: solid background + border, plus an arbitrary
+  // list of text lines ({text, y, color, font}). Portrait, matching the
+  // 3ft x 4ft (3:4) poster it's mapped onto. lines can be empty for a
+  // blank poster.
+  function createPosterTexture(bgColor, borderColor, lines) {
     var cnv = makeCanvas(384, 512);
     var ctx = cnv.getContext('2d');
-    ctx.fillStyle = '#e4f1fb';
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, 384, 512);
-    ctx.strokeStyle = '#a9c6db';
+    ctx.strokeStyle = borderColor;
     ctx.lineWidth = 6;
     ctx.strokeRect(10, 10, 364, 492);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#c81e1e';
-    ctx.font = 'bold 32px Arial, sans-serif';
-    ctx.fillText("Please don't use", 192, 150);
-    ctx.fillText('dryer fabric sheets,', 192, 195);
-    ctx.fillText('wool balls, etc.', 192, 240);
-    ctx.fillText('in the dryers', 192, 285);
-    ctx.font = '22px Arial, sans-serif';
-    ctx.fillStyle = '#5a5650';
-    ctx.fillText('They make some neighbors sick', 192, 365);
+    lines.forEach(function (line) {
+      ctx.font = line.font;
+      ctx.fillStyle = line.color;
+      ctx.fillText(line.text, 192, line.y);
+    });
     var tex = new THREE.CanvasTexture(cnv);
     tex.anisotropy = 4;
     tex.encoding = THREE.sRGBEncoding;
     return tex;
+  }
+
+  var POSTER_RED_BOLD = 'bold 32px Arial, sans-serif';
+  var POSTER_SMALL = '22px Arial, sans-serif';
+
+  function dryerWarningPosterTexture() {
+    return createPosterTexture('#e4f1fb', '#a9c6db', [
+      { text: "Please don't use", y: 150, color: '#c81e1e', font: POSTER_RED_BOLD },
+      { text: 'dryer fabric sheets,', y: 195, color: '#c81e1e', font: POSTER_RED_BOLD },
+      { text: 'wool balls, etc.', y: 240, color: '#c81e1e', font: POSTER_RED_BOLD },
+      { text: 'in the dryers', y: 285, color: '#c81e1e', font: POSTER_RED_BOLD },
+      { text: 'They make some neighbors sick', y: 365, color: '#5a5650', font: POSTER_SMALL }
+    ]);
+  }
+
+  function promptRemovalPosterTexture() {
+    return createPosterTexture('#fdf6dc', '#d9c98a', [
+      { text: 'Please remember to', y: 150, color: '#c81e1e', font: POSTER_RED_BOLD },
+      { text: 'remove laundry from', y: 195, color: '#c81e1e', font: POSTER_RED_BOLD },
+      { text: 'machines promptly.', y: 240, color: '#c81e1e', font: POSTER_RED_BOLD },
+      { text: 'Our building does', y: 320, color: '#2a2a28', font: POSTER_SMALL },
+      { text: 'a lot of laundry', y: 350, color: '#2a2a28', font: POSTER_SMALL }
+    ]);
+  }
+
+  function blankPosterTexture() {
+    return createPosterTexture('#d8d8d8', '#b0b0b0', []);
   }
 
   var brickTex = createBrickTexture(0xb5522b, ROOM_W / 1.4, WALL_H / 1.4);
@@ -1770,7 +1796,7 @@
 
   // A framed poster, front face at local +Z (same convention as the
   // appliances) so it can be placed on the dryer wall the same way they are.
-  function makePoster(width, height) {
+  function makePoster(width, height, texture) {
     var g = new THREE.Group();
     var frameThickness = 0.035;
     var frameMat = new THREE.MeshStandardMaterial({ color: 0x3b2e22, roughness: 0.6 });
@@ -1778,7 +1804,7 @@
     frame.position.set(0, 0, frameThickness / 2);
     g.add(frame);
 
-    var faceMat = new THREE.MeshStandardMaterial({ map: createPosterTexture(), roughness: 0.7 });
+    var faceMat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.7 });
     var face = new THREE.Mesh(new THREE.PlaneGeometry(width, height), faceMat);
     face.position.set(0, 0, frameThickness + 0.005);
     g.add(face);
@@ -1792,23 +1818,24 @@
   // cabinet top (1.0) and the top of the wall (WALL_H, 3.0). Net -1ft from
   // dryerCenters[0] (+1ft "left" toward +Z, then 2ft back the other way
   // toward -Z/"right", for someone facing this wall).
-  var poster = makePoster(0.9144, 1.2192);
+  var poster = makePoster(0.9144, 1.2192, dryerWarningPosterTexture());
   poster.rotation.y = -Math.PI / 2;
   poster.position.set(ROOM_W - 0.02, 2.0, dryerCenters[0] - 0.3048);
   scene.add(poster);
 
-  // 3 more posters (same design for now — swap createPosterTexture() per
-  // poster later for different messages) on the back wall above the
-  // washers, evenly distributed between the left edge of washer 1 and the
-  // right edge of washer 5: the span is divided into 3 equal segments and
-  // each poster centered in its own segment. No rotation needed here (the
-  // back wall already faces +Z, same as the washers' own local convention).
+  // 3 more posters on the back wall above the washers, evenly distributed
+  // between the left edge of washer 1 and the right edge of washer 5: the
+  // span is divided into 3 equal segments and each poster centered in its
+  // own segment. No rotation needed here (the back wall already faces +Z,
+  // same as the washers' own local convention). Middle one has a message;
+  // the other two are blank placeholders for now.
   var washersLeftEdge = washerCenters[0] - washerWidths[0] / 2;
   var washersRightEdge = washerCenters[washerCenters.length - 1] + washerWidths[washerWidths.length - 1] / 2;
   var washersSpan = washersRightEdge - washersLeftEdge;
   var backWallPosterY = (Math.max(flH, tlH) + WALL_H) / 2;
+  var backWallPosterTextures = [blankPosterTexture, promptRemovalPosterTexture, blankPosterTexture];
   for (var pi = 0; pi < 3; pi++) {
-    var backPoster = makePoster(0.9144, 1.2192);
+    var backPoster = makePoster(0.9144, 1.2192, backWallPosterTextures[pi]());
     backPoster.position.set(washersLeftEdge + washersSpan * (pi + 0.5) / 3, backWallPosterY, 0.02);
     scene.add(backPoster);
   }
