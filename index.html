@@ -1390,7 +1390,6 @@
   // bright, mostly-uniform silver base color (from the diffuse term) plus a
   // tight specular glint (low roughness), without relying on reflections.
   var chrome = new THREE.MeshStandardMaterial({ color: 0xe2e5e7, roughness: 0.28, metalness: 0.45 });
-  var knobDark = new THREE.MeshStandardMaterial({ color: 0x22252a, roughness: 0.4, metalness: 0.3 });
   var legMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6 });
 
   function addShadowFlags(obj) {
@@ -1587,13 +1586,6 @@
     var decal = decalPlane(width * 0.75, height * 0.1, label);
     decal.position.set(0, consoleY, consoleZ + 0.045);
     g.add(decal);
-
-    for (var i = -1; i <= 1; i++) {
-      var knob = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.03, 16), knobDark);
-      knob.rotation.x = Math.PI / 2;
-      knob.position.set(i * width * 0.22, consoleY, consoleZ + 0.05);
-      g.add(knob);
-    }
 
     var legH = 0.08;
     [-1, 1].forEach(function (sx) {
