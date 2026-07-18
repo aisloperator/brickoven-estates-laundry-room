@@ -210,6 +210,18 @@
     return createPosterTexture('#d8d8d8', '#b0b0b0', []);
   }
 
+  function heDetergentPosterTexture() {
+    var blue = 'bold 32px Arial, sans-serif';
+    return createPosterTexture('#e3f5df', '#9dcf94', [
+      { text: 'These are High', y: 150, color: '#1a56c4', font: blue },
+      { text: 'Efficiency', y: 195, color: '#1a56c4', font: blue },
+      { text: 'washers.', y: 240, color: '#1a56c4', font: blue },
+      { text: "Too much 'HE' detergent", y: 320, color: '#2a2a28', font: POSTER_SMALL },
+      { text: 'will leave residue in', y: 350, color: '#2a2a28', font: POSTER_SMALL },
+      { text: 'clothes and machines', y: 380, color: '#2a2a28', font: POSTER_SMALL }
+    ]);
+  }
+
   var brickTex = createBrickTexture(0xb5522b, ROOM_W / 1.4, WALL_H / 1.4);
   var brickTexSide = createBrickTexture(0xb5522b, ROOM_D / 1.4, WALL_H / 1.4);
   var floorTex = createFloorTexture();
@@ -687,7 +699,7 @@
   var washersRightEdge = washerCenters[washerCenters.length - 1] + washerWidths[washerWidths.length - 1] / 2;
   var washersSpan = washersRightEdge - washersLeftEdge;
   var backWallPosterY = (Math.max(flH, tlH) + WALL_H) / 2;
-  var backWallPosterTextures = [blankPosterTexture, promptRemovalPosterTexture, blankPosterTexture];
+  var backWallPosterTextures = [heDetergentPosterTexture, promptRemovalPosterTexture, blankPosterTexture];
   for (var pi = 0; pi < 3; pi++) {
     var backPoster = makePoster(0.9144, 1.2192, backWallPosterTextures[pi]());
     backPoster.position.set(washersLeftEdge + washersSpan * (pi + 0.5) / 3, backWallPosterY, 0.02);
