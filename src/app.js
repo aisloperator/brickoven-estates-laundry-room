@@ -254,7 +254,7 @@
       { text: 'or Boomerangs in', y: 300, color: '#1f7a3d', font: green },
       { text: 'Central Square', y: 338, color: '#1f7a3d', font: green }
     ], function (ctx) {
-      drawHeart(ctx, 192, 400, 70, '#c81e1e');
+      drawHeart(ctx, 192, 400, 70, '#e35d5d');
     });
   }
 
