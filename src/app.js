@@ -208,24 +208,24 @@
     return tex;
   }
 
-  var POSTER_RED_BOLD = 'bold 32px Arial, sans-serif';
+  var POSTER_BOLD_32 = 'bold 32px Arial, sans-serif';
   var POSTER_SMALL = '22px Arial, sans-serif';
 
   function dryerWarningPosterTexture() {
-    return createPosterTexture('#e4f1fb', '#a9c6db', [
-      { text: "Please don't use", y: 150, color: '#c81e1e', font: POSTER_RED_BOLD },
-      { text: 'dryer fabric sheets,', y: 195, color: '#c81e1e', font: POSTER_RED_BOLD },
-      { text: 'wool balls, etc.', y: 240, color: '#c81e1e', font: POSTER_RED_BOLD },
-      { text: 'in the dryers', y: 285, color: '#c81e1e', font: POSTER_RED_BOLD },
+    return createPosterTexture('#b8dff2', '#7fb8d9', [
+      { text: "Please don't use", y: 150, color: '#e0761a', font: POSTER_BOLD_32 },
+      { text: 'dryer fabric sheets,', y: 195, color: '#e0761a', font: POSTER_BOLD_32 },
+      { text: 'wool balls, etc.', y: 240, color: '#e0761a', font: POSTER_BOLD_32 },
+      { text: 'in the dryers', y: 285, color: '#e0761a', font: POSTER_BOLD_32 },
       { text: 'They make some neighbors sick', y: 365, color: '#5a5650', font: POSTER_SMALL }
     ]);
   }
 
   function promptRemovalPosterTexture() {
     return createPosterTexture('#fdf6dc', '#d9c98a', [
-      { text: 'Please remember to', y: 150, color: '#c81e1e', font: POSTER_RED_BOLD },
-      { text: 'remove laundry from', y: 195, color: '#c81e1e', font: POSTER_RED_BOLD },
-      { text: 'machines promptly.', y: 240, color: '#c81e1e', font: POSTER_RED_BOLD },
+      { text: 'Please remember to', y: 150, color: '#c81e1e', font: POSTER_BOLD_32 },
+      { text: 'remove laundry from', y: 195, color: '#c81e1e', font: POSTER_BOLD_32 },
+      { text: 'machines promptly.', y: 240, color: '#c81e1e', font: POSTER_BOLD_32 },
       { text: 'Our building does', y: 320, color: '#2a2a28', font: POSTER_SMALL },
       { text: 'a lot of laundry', y: 350, color: '#2a2a28', font: POSTER_SMALL }
     ]);
