@@ -1192,6 +1192,13 @@
     var forwardVec = new THREE.Vector3(Math.sin(carryHeading), 0, Math.cos(carryHeading));
     var laundryTarget = randomSpot.clone().add(forwardVec.clone().multiplyScalar(0.32));
     laundryTarget.y = 0;
+    // The laundry sits straight ahead along carryHeading. Turning a quarter
+    // turn from there swings the dog's local -X side — where legBR (the
+    // hind leg it lifts) lives — to face the laundry instead, without
+    // needing to relocate the dog: peeing straight ahead like the walk
+    // heading would read as facing the target head-on rather than lifting
+    // a leg toward it the way a dog actually would.
+    var peeHeading = carryHeading + Math.PI / 2;
     // Where the dog backs up to before breathing fire, still facing the laundry.
     var backUpPos = randomSpot.clone().add(forwardVec.clone().multiplyScalar(-0.55));
     backUpPos.y = 0;
@@ -1309,6 +1316,10 @@
         }
       },
 
+      // Turn side-on to the laundry so the leg it lifts (legBR) actually
+      // points at it, rather than peeing straight ahead while facing it.
+      turnStep(carryHeading, peeHeading, 300),
+
       // Lift a leg and pee on the pile for 2 seconds.
       {
         duration: 2000,
@@ -1339,6 +1350,9 @@
           if (peeStream) { scene.remove(peeStream); peeStream.geometry.dispose(); peeStream = null; }
         }
       },
+
+      // Turn back to face the laundry head-on before backing away from it.
+      turnStep(peeHeading, carryHeading, 300),
 
       // Back up a step, still facing the laundry, before breathing fire on it.
       walkStep(randomSpot, backUpPos, carryHeading, 1.1),
