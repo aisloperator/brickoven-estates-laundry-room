@@ -826,7 +826,7 @@
     { x: edgeInset, z: ROOM_D - edgeInset, count: 23 },        // tight in the corner
     { x: edgeInset, z: ROOM_D - edgeInset - 0.33, count: 23 }, // along the x=0 edge
     { x: edgeInset + 0.33, z: ROOM_D - edgeInset, count: 22 }, // along the far (z=ROOM_D) edge
-    { x: edgeInset + 0.825, z: ROOM_D - edgeInset, count: 22 } // further along that same far edge
+    { x: edgeInset + 0.58, z: ROOM_D - edgeInset, count: 22 }  // further along that same far edge
   ];
   cornerStackSpecs.forEach(function (spec) {
     var stack = createBookPile(spec.count, 3, 0.16);
