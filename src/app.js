@@ -607,10 +607,12 @@
 
   // Portrait, 3ft x 4ft. Mounted over dryer 6 (the standalone unit,
   // dryerCenters[0]), y=2.0 centers it in the wall space between its
-  // cabinet top (1.0) and the top of the wall (WALL_H, 3.0).
+  // cabinet top (1.0) and the top of the wall (WALL_H, 3.0). Shifted 1ft
+  // toward +Z, which is "left" for someone facing this wall (it faces -X,
+  // so right = -Z, left = +Z).
   var poster = makePoster(0.9144, 1.2192);
   poster.rotation.y = -Math.PI / 2;
-  poster.position.set(ROOM_W - 0.02, 2.0, dryerCenters[0]);
+  poster.position.set(ROOM_W - 0.02, 2.0, dryerCenters[0] + 0.3048);
   scene.add(poster);
 
   // ---------- click-to-play dog animation ----------
