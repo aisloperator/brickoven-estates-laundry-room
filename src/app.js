@@ -213,16 +213,16 @@
 
   function dryerWarningPosterTexture() {
     return createPosterTexture('#b8dff2', '#7fb8d9', [
-      { text: "Please don't use", y: 150, color: '#e0761a', font: POSTER_BOLD_32 },
-      { text: 'dryer fabric sheets,', y: 195, color: '#e0761a', font: POSTER_BOLD_32 },
-      { text: 'wool balls, etc.', y: 240, color: '#e0761a', font: POSTER_BOLD_32 },
-      { text: 'in the dryers', y: 285, color: '#e0761a', font: POSTER_BOLD_32 },
+      { text: "Please don't use", y: 150, color: '#ff8c1a', font: POSTER_BOLD_32 },
+      { text: 'dryer fabric sheets,', y: 195, color: '#ff8c1a', font: POSTER_BOLD_32 },
+      { text: 'wool balls, etc.', y: 240, color: '#ff8c1a', font: POSTER_BOLD_32 },
+      { text: 'in the dryers', y: 285, color: '#ff8c1a', font: POSTER_BOLD_32 },
       { text: 'They make some neighbors sick', y: 365, color: '#5a5650', font: POSTER_SMALL }
     ]);
   }
 
   function promptRemovalPosterTexture() {
-    return createPosterTexture('#fdf6dc', '#d9c98a', [
+    return createPosterTexture('#f7e26b', '#d4b83a', [
       { text: 'Please remember to', y: 150, color: '#c81e1e', font: POSTER_BOLD_32 },
       { text: 'remove laundry from', y: 195, color: '#c81e1e', font: POSTER_BOLD_32 },
       { text: 'machines promptly.', y: 240, color: '#c81e1e', font: POSTER_BOLD_32 },
