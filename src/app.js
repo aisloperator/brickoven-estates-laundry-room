@@ -30,12 +30,8 @@
   var WALL_T = 0.15;
 
   var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  // Positioned off to the open front-left of the room, elevated, looking
-  // back across it toward the doorway — see the controls.target comment
-  // below for why. Kept off to the left and pulled back this far so the
-  // leftmost washer still clears the frame even though the look-at point
-  // is well off-center (near the doorway, not room-center).
-  camera.position.set(ROOM_W * 0.22 - 3.524, 1.83, ROOM_D * 2.5);
+  // Initial position is set further down (near controls.target), once
+  // washerCenters exists — it's aimed at washer 5, so it needs that.
 
   // ---------- lights ----------
   var hemi = new THREE.HemisphereLight(0xf3ede2, 0x8a6a4a, 0.65);
@@ -1171,11 +1167,23 @@
   });
 
   // ---------- controls ----------
+  // Initial view: aimed at washer 5 (rightmost, nearest the doorway) rather
+  // than the doorway itself. Camera position is target + a fixed offset
+  // (elevated, off to the front-left, ~6ft eye height) whose distance was
+  // tuned by hand-checking the angle from camera to both the farthest-away
+  // machine in each direction (leftmost washer, far dryer-wall corner) and
+  // the tallest point (stacked dryer top) against this camera's half-FOV
+  // (22.5 deg vertical; horizontal is wider, so vertical is the tighter
+  // constraint) — all landed with a few degrees of margin at this offset.
+  // If washer/room proportions change enough to matter, redo that check
+  // before just nudging the numbers.
+  var washer5X = washerCenters[washerCenters.length - 1];
+  var camTarget = new THREE.Vector3(washer5X, 0.45, WALL_T + tlD * 0.5);
+  var camOffset = new THREE.Vector3(-5.31, 1.17, 9.31);
+  camera.position.copy(camTarget).add(camOffset);
+
   var controls = new THREE.OrbitControls(camera, renderer.domElement);
-  // Framed on the left doorway post (doorGapStart), low enough to tilt the
-  // view down and show the tops of the washers, at a depth that keeps every
-  // machine's front on screen alongside it.
-  controls.target.set(doorGapStart, 0.45, ROOM_D * 0.37);
+  controls.target.copy(camTarget);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.minDistance = 1.5;
