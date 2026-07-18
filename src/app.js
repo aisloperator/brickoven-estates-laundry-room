@@ -1466,17 +1466,24 @@
   // ---------- controls ----------
   // Initial view: aimed at washer 5 (rightmost, nearest the doorway) rather
   // than the doorway itself. Camera position is target + a fixed offset
-  // (elevated, off to the front-left, ~6ft eye height) whose distance was
-  // tuned by hand-checking the angle from camera to both the farthest-away
-  // machine in each direction (leftmost washer, far dryer-wall corner) and
-  // the tallest point (stacked dryer top) against this camera's half-FOV
-  // (22.5 deg vertical; horizontal is wider, so vertical is the tighter
-  // constraint) — all landed with a few degrees of margin at this offset.
+  // (elevated, off to the front-left, ~6ft eye height), scaled down from an
+  // earlier, looser framing to sit tighter around just the machines rather
+  // than the whole room. Checked against the angle from camera to the
+  // farthest-away machine in each direction (leftmost washer, far
+  // dryer-wall corner) and the tallest point (stacked dryer top) against
+  // this camera's half-FOV (22.5 deg vertical; horizontal is wider, so
+  // vertical is the tighter constraint) — all still land with a few
+  // degrees of margin at this tighter offset. Note: the book pile
+  // (front-left floor corner) sits at a similar angular distance to the
+  // leftmost washer from this camera line, so tightening enough to fully
+  // exclude the books would also start cropping that washer — this offset
+  // prioritizes keeping every machine in frame, not hiding the books
+  // completely; they're still tucked at the edge rather than centered.
   // If washer/room proportions change enough to matter, redo that check
   // before just nudging the numbers.
   var washer5X = washerCenters[washerCenters.length - 1];
   var camTarget = new THREE.Vector3(washer5X, 0.45, WALL_T + tlD * 0.5);
-  var camOffset = new THREE.Vector3(-5.31, 1.17, 9.31);
+  var camOffset = new THREE.Vector3(-4.35, 0.96, 7.63);
   camera.position.copy(camTarget).add(camOffset);
 
   var controls = new THREE.OrbitControls(camera, renderer.domElement);
