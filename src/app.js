@@ -810,11 +810,13 @@
     addShadowFlags(g);
     return g;
   }
-  // Deliberately placed well outside the initial camera's field of view —
-  // an easter egg only found by orbiting around. (Off past the room's open
-  // x=0 edge, where there's no wall anyway.)
+  // On the tile floor, tucked into the front-left corner — within the
+  // room's actual footprint, but away from both appliance walls and from
+  // where the initial camera's attention (and framing) is on the machines,
+  // so it's an easter egg found by orbiting around rather than something
+  // front-and-center.
   var bookPile = createBookPile(90);
-  bookPile.position.set(-2.8, 0, 1.3);
+  bookPile.position.set(0.6, 0, 4.15);
   scene.add(bookPile);
 
   // ---------- click-to-play dog animation ----------
