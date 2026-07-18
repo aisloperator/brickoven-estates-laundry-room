@@ -86,7 +86,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T03:23:40Z</span></a>
+<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T03:27:56Z</span></a>
 <div id="hint">Drag to orbit &middot; scroll or pinch to zoom &middot; right-drag or two-finger drag to pan &middot; click a machine to see what happens</div>
 <div id="fallback"><div>Your browser could not start WebGL, which this 3D room preview requires.<br>Please try the latest version of Chrome, Firefox, or Safari.</div></div>
 <script>
@@ -1302,22 +1302,24 @@
   }
 
   function createPosterTexture() {
-    var cnv = makeCanvas(512, 330);
+    // Portrait, matching the 3ft x 4ft (3:4) poster it's mapped onto.
+    var cnv = makeCanvas(384, 512);
     var ctx = cnv.getContext('2d');
-    ctx.fillStyle = '#f2ede1';
-    ctx.fillRect(0, 0, 512, 330);
-    ctx.strokeStyle = '#c9c0a8';
+    ctx.fillStyle = '#e4f1fb';
+    ctx.fillRect(0, 0, 384, 512);
+    ctx.strokeStyle = '#a9c6db';
     ctx.lineWidth = 6;
-    ctx.strokeRect(10, 10, 492, 310);
+    ctx.strokeRect(10, 10, 364, 492);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#2a2a28';
-    ctx.font = 'bold 34px Arial, sans-serif';
-    ctx.fillText("Please don't use dryer fabric sheets,", 256, 125);
-    ctx.fillText('wool balls, etc.', 256, 170);
-    ctx.font = '24px Arial, sans-serif';
+    ctx.fillStyle = '#c81e1e';
+    ctx.font = 'bold 32px Arial, sans-serif';
+    ctx.fillText("Please don't use", 192, 165);
+    ctx.fillText('dryer fabric sheets,', 192, 210);
+    ctx.fillText('wool balls, etc.', 192, 255);
+    ctx.font = '22px Arial, sans-serif';
     ctx.fillStyle = '#5a5650';
-    ctx.fillText('They make some neighbors sick', 256, 235);
+    ctx.fillText('They make some neighbors sick', 192, 340);
     var tex = new THREE.CanvasTexture(cnv);
     tex.anisotropy = 4;
     tex.encoding = THREE.sRGBEncoding;
@@ -1746,11 +1748,12 @@
     return g;
   }
 
-  // Mounted over dryer 6 (the standalone unit, dryerCenters[0]), centered in
-  // the wall space between its cabinet top and the top of the wall.
-  var poster = makePoster(0.85, 0.55);
+  // Portrait, 3ft x 4ft. Mounted over dryer 6 (the standalone unit,
+  // dryerCenters[0]), y=2.0 centers it in the wall space between its
+  // cabinet top (1.0) and the top of the wall (WALL_H, 3.0).
+  var poster = makePoster(0.9144, 1.2192);
   poster.rotation.y = -Math.PI / 2;
-  poster.position.set(ROOM_W - 0.02, 1.9, dryerCenters[0]);
+  poster.position.set(ROOM_W - 0.02, 2.0, dryerCenters[0]);
   scene.add(poster);
 
   // ---------- click-to-play dog animation ----------
