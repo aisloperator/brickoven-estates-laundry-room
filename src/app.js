@@ -1480,26 +1480,31 @@
 
   // ---------- controls ----------
   // Initial view: aimed at washer 5 (rightmost, nearest the doorway) rather
-  // than the doorway itself. Camera position is target + a fixed offset
+  // than the doorway itself. Camera position is camTarget + a fixed offset
   // (elevated, off to the front-left, ~6ft eye height), scaled down from an
   // earlier, looser framing to sit tighter around just the machines rather
-  // than the whole room; x was later nudged further right (less negative)
-  // for a better angle. Checked against the angle from camera to the
+  // than the whole room. Checked against the angle from camera to the
   // farthest-away machine in each direction (leftmost washer, far
   // dryer-wall corner) and the tallest point (stacked dryer top) against
   // this camera's half-FOV (22.5 deg vertical; horizontal is wider, so
-  // vertical is the tighter constraint) — all still land with a bit of
-  // margin at this offset, tightest on the far dryer corner (~1-1.5 deg).
-  // If washer/room/dryer proportions change enough to matter, redo that
-  // check before just nudging the numbers — don't push x further right
-  // without rechecking, that margin is already thin.
+  // vertical is the tighter constraint).
+  //
+  // Those two checks weren't balanced — washer 1 had much more margin
+  // than the dryer corner, i.e. dead space on the left with the right
+  // nearly cropped. Fixed by decoupling *where the camera looks* from
+  // *where it sits*: controls.target is panned a bit right of camTarget
+  // (which still alone determines camera.position), rotating the aim
+  // without moving the camera or changing distance/zoom at all. That
+  // pulls washer 1 toward the frame's left edge (less dead space) while
+  // giving the dryer corner a little more room, rebalancing both to a
+  // similar margin instead of moving the imbalance around.
   var washer5X = washerCenters[washerCenters.length - 1];
   var camTarget = new THREE.Vector3(washer5X, 0.45, WALL_T + tlD * 0.5);
   var camOffset = new THREE.Vector3(-3.70, 0.96, 7.63);
   camera.position.copy(camTarget).add(camOffset);
 
   var controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.target.copy(camTarget);
+  controls.target.set(camTarget.x + 0.5, camTarget.y, camTarget.z);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.minDistance = 1.5;
