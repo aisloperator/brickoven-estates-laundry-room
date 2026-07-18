@@ -219,10 +219,10 @@
 
   function dryerWarningPosterTexture() {
     return createPosterTexture('#b8dff2', '#7fb8d9', [
-      { text: "Please don't use", y: 150, color: '#ff8c1a', font: POSTER_BOLD_32 },
-      { text: 'dryer fabric sheets,', y: 195, color: '#ff8c1a', font: POSTER_BOLD_32 },
-      { text: 'wool balls, etc.', y: 240, color: '#ff8c1a', font: POSTER_BOLD_32 },
-      { text: 'in the dryers', y: 285, color: '#ff8c1a', font: POSTER_BOLD_32 },
+      { text: "Please don't use", y: 150, color: '#cc5500', font: POSTER_BOLD_32 },
+      { text: 'dryer fabric sheets,', y: 195, color: '#cc5500', font: POSTER_BOLD_32 },
+      { text: 'wool balls, etc.', y: 240, color: '#cc5500', font: POSTER_BOLD_32 },
+      { text: 'in the dryers', y: 285, color: '#cc5500', font: POSTER_BOLD_32 },
       { text: 'They make some neighbors sick', y: 365, color: '#5a5650', font: POSTER_SMALL }
     ]);
   }
@@ -260,7 +260,7 @@
       { text: 'or Boomerangs in', y: 300, color: '#1f7a3d', font: green },
       { text: 'Central Square', y: 338, color: '#1f7a3d', font: green }
     ], function (ctx) {
-      drawHeart(ctx, 192, 400, 70, '#e35d5d');
+      drawHeart(ctx, 192, 400, 70, '#2fa84f');
     });
   }
 
