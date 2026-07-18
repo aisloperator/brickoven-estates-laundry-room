@@ -591,6 +591,31 @@
     return { group: group, cones: cones };
   }
 
+  // 4 overlapping upward cones clustered around a center point, each with
+  // its own base height/phase so they flicker independently — reads as a
+  // small licking fire rather than one uniform cone shape.
+  function buildFlameTongues(scaleMul) {
+    scaleMul = scaleMul || 1;
+    var offsets = [{ x: 0, z: 0 }, { x: 0.08, z: 0.035 }, { x: -0.075, z: 0.05 }, { x: 0.015, z: -0.08 }];
+    var colors = [0xd22600, 0xff7a00, 0xff7a00, 0xd22600];
+    var group = new THREE.Group();
+    var cones = offsets.map(function (off, i) {
+      var r = (0.05 + Math.random() * 0.02) * scaleMul;
+      var h = (0.4 + Math.random() * 0.18) * scaleMul;
+      var mat = new THREE.MeshBasicMaterial({ color: colors[i], transparent: true, opacity: 0.88, depthWrite: false });
+      var cone = new THREE.Mesh(new THREE.ConeGeometry(r, h, 8), mat);
+      cone.position.set(off.x * scaleMul, h / 2, off.z * scaleMul);
+      cone.renderOrder = i;
+      cone.userData.baseX = off.x * scaleMul;
+      cone.userData.baseZ = off.z * scaleMul;
+      cone.userData.baseHeight = h;
+      cone.userData.phase = Math.random() * Math.PI * 2;
+      group.add(cone);
+      return cone;
+    });
+    return { group: group, cones: cones };
+  }
+
   function buildDog() {
     var furMat = new THREE.MeshStandardMaterial({ color: 0xc98a4b, roughness: 0.85 });
     var furDarkMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2e, roughness: 0.85 });
@@ -947,16 +972,23 @@
       {
         duration: 1000,
         onStart: function () {
-          laundryFire = buildFlameCluster('up', 0.75);
+          laundryFire = buildFlameTongues(0.75);
           laundryFire.group.position.copy(laundryTarget);
           laundryFire.group.position.y += 0.02;
           scene.add(laundryFire.group);
         },
         update: function (t) {
           laundryFire.cones.forEach(function (cone) {
-            var jx = 0.8 + Math.random() * 0.35;
-            var jy = 0.85 + Math.random() * 0.3;
-            cone.scale.set(jx, jy, jx);
+            // Each tongue flickers its height independently (own phase),
+            // re-centering so its base stays pinned to the floor as it
+            // grows/shrinks rather than scaling from the middle.
+            var wob = 0.7 + 0.5 * Math.abs(Math.sin(t * 16 + cone.userData.phase));
+            var h = cone.userData.baseHeight * wob;
+            cone.scale.y = wob;
+            cone.position.y = h / 2;
+            var jxz = 0.9 + Math.random() * 0.2;
+            cone.scale.x = jxz;
+            cone.scale.z = jxz;
           });
           var burn = Math.max(0.001, 1 - t);
           laundry.scale.setScalar(burn);
