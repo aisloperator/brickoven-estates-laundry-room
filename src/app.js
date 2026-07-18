@@ -591,28 +591,35 @@
     return { group: group, cones: cones };
   }
 
-  // 4 overlapping upward cones clustered around a center point, each with
+  // 8 overlapping upward cones clustered around a center point, each with
   // its own base height/phase so they flicker independently — reads as a
-  // small licking fire rather than one uniform cone shape.
+  // small licking fire rather than one uniform cone shape. Offsets are laid
+  // out around a ring (with jitter) rather than hand-placed so the count is
+  // just a loop bound.
   function buildFlameTongues(scaleMul) {
     scaleMul = scaleMul || 1;
-    var offsets = [{ x: 0, z: 0 }, { x: 0.08, z: 0.035 }, { x: -0.075, z: 0.05 }, { x: 0.015, z: -0.08 }];
-    var colors = [0xd22600, 0xff7a00, 0xff7a00, 0xd22600];
+    var count = 8;
+    var colors = [0xd22600, 0xff7a00];
     var group = new THREE.Group();
-    var cones = offsets.map(function (off, i) {
-      var r = (0.05 + Math.random() * 0.02) * scaleMul;
-      var h = (0.4 + Math.random() * 0.18) * scaleMul;
-      var mat = new THREE.MeshBasicMaterial({ color: colors[i], transparent: true, opacity: 0.88, depthWrite: false });
+    var cones = [];
+    for (var i = 0; i < count; i++) {
+      var angle = (i / count) * Math.PI * 2 + Math.random() * 0.6;
+      var ringR = (0.03 + Math.random() * 0.055) * scaleMul;
+      var offX = Math.cos(angle) * ringR;
+      var offZ = Math.sin(angle) * ringR;
+      var r = (0.045 + Math.random() * 0.02) * scaleMul;
+      var h = (0.36 + Math.random() * 0.2) * scaleMul;
+      var mat = new THREE.MeshBasicMaterial({ color: colors[i % 2], transparent: true, opacity: 0.88, depthWrite: false });
       var cone = new THREE.Mesh(new THREE.ConeGeometry(r, h, 8), mat);
-      cone.position.set(off.x * scaleMul, h / 2, off.z * scaleMul);
+      cone.position.set(offX, h / 2, offZ);
       cone.renderOrder = i;
-      cone.userData.baseX = off.x * scaleMul;
-      cone.userData.baseZ = off.z * scaleMul;
+      cone.userData.baseX = offX;
+      cone.userData.baseZ = offZ;
       cone.userData.baseHeight = h;
       cone.userData.phase = Math.random() * Math.PI * 2;
       group.add(cone);
-      return cone;
-    });
+      cones.push(cone);
+    }
     return { group: group, cones: cones };
   }
 
