@@ -755,6 +755,7 @@
       var ang = (i / n) * Math.PI * 2;
       piece.position.set(Math.cos(ang) * 0.06, s * 0.35 + i * 0.015, Math.sin(ang) * 0.06);
       piece.rotation.set(Math.random() * 1, Math.random() * Math.PI * 2, Math.random() * 1);
+      piece.userData.origColor = mat.color.clone();
       g.add(piece);
     }
     addShadowFlags(g);
@@ -779,6 +780,7 @@
     color: 0xe0c400, transparent: true, opacity: 0.8, roughness: 0.15, metalness: 0.1,
     emissive: 0x6b5a00, emissiveIntensity: 0.35
   });
+  var charredColor = new THREE.Color(0x0a0806);
 
   var sequencer = null;
   var doorwayX = (doorGapStart + doorGapEnd) / 2;
@@ -993,6 +995,11 @@
           var burn = Math.max(0.001, 1 - t);
           laundry.scale.setScalar(burn);
           laundry.rotation.y += 0.18;
+          laundry.traverse(function (o) {
+            if (o.isMesh && o.userData.origColor) {
+              o.material.color.copy(o.userData.origColor).lerp(charredColor, t);
+            }
+          });
 
           // The puddle rushes away fast, gone well before the laundry is.
           if (puddle) {
