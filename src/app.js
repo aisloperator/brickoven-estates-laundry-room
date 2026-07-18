@@ -320,7 +320,7 @@
     if (doorStyle === 'rect') {
       // Extruded (not flat) and left proud of the cabinet face so it reads
       // as a solid door, including edge-on while swung open.
-      var doorThickness = 0.045;
+      var doorThickness = 0.0225;
       var doorShape = roundedRectShape(doorW, doorH, doorR * 0.4);
       var doorGeo = new THREE.ExtrudeGeometry(doorShape, { depth: doorThickness, bevelEnabled: false, curveSegments: 12 });
       var doorPanel = new THREE.Mesh(doorGeo, doorWhiteMat);
@@ -391,7 +391,7 @@
   function makeTopLoad(width, height, depth, bodyMat, machineNumber, label) {
     var g = new THREE.Group();
     var tubY = height * 0.86;
-    var lidH = height * 0.05;
+    var lidH = height * 0.025;
 
     var cabinet = new THREE.Mesh(new THREE.BoxGeometry(width, tubY, depth), bodyMat);
     cabinet.position.set(0, tubY / 2, depth / 2);
