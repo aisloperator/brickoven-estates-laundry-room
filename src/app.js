@@ -32,6 +32,12 @@
   var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   // Initial position is set further down (near controls.target), once
   // washerCenters exists — it's aimed at washer 5, so it needs that.
+  // Added to the scene graph (even though nothing about its own transform
+  // depends on a parent) so that camera-relative HUD-style objects added
+  // via camera.add() — see the book-click overlay below — actually get
+  // traversed and rendered; renderer.render(scene, camera) only renders
+  // what's reachable from `scene`.
+  scene.add(camera);
 
   // ---------- lights ----------
   var hemi = new THREE.HemisphereLight(0xf3ede2, 0x8a6a4a, 0.65);
@@ -773,6 +779,10 @@
   // rather than front-and-center.
   var bookPageMat = new THREE.MeshStandardMaterial({ color: 0xf0e6c8, roughness: 0.85 });
 
+  // Every individual book mesh across every pile, so any one of them can be
+  // clicked to trigger the book-opening overlay (see "books" picking below).
+  var books = [];
+
   function createBookPile(count, numCols, maxRadius) {
     numCols = numCols || 6;
     maxRadius = maxRadius === undefined ? 0.28 : maxRadius;
@@ -818,6 +828,7 @@
       }
       col.h += bt + 0.002;
       g.add(book);
+      books.push(book);
     }
     addShadowFlags(g);
     return g;
@@ -1465,7 +1476,160 @@
     sequencer = new Sequencer(steps);
   }
 
-  // ---------- click / tap detection on machines ----------
+  // ---------- click-to-read book overlay ----------
+  // Clicking any book in the corner piles plays a short animation: a
+  // dedicated (reused, not recreated per-click — its content is static
+  // placeholder text, unlike the per-machine decals) book flies in small
+  // and distant, spinning, then swaps to an open two-page spread that
+  // unfolds to fill most of the screen. It's built and animated entirely
+  // in camera-local space — added as a child of `camera` — so it always
+  // reads as screen-filling regardless of how the orbit camera happens to
+  // be aimed, and its final fill scale is derived from the camera's
+  // actual fov/aspect at open() time rather than a fixed number.
+  var bookCoverMat = new THREE.MeshBasicMaterial({ color: 0x3a3a8a });
+  var bookSpineMat = new THREE.MeshBasicMaterial({ color: 0x24243f });
+
+  // Base (pre-scale) page size — 384x512 to match createPosterTexture's
+  // own canvas 1:1, so the page doesn't stretch its texture.
+  var pageW0 = 1, pageH0 = pageW0 * (512 / 384);
+  var leftPageMat = new THREE.MeshBasicMaterial({
+    map: createPosterTexture('#f0e6c8', '#cbb98f', [
+      { text: 'A', y: 266, color: '#2a2216', font: 'bold 260px Georgia, serif' }
+    ])
+  });
+  var rightPageMat = new THREE.MeshBasicMaterial({
+    map: createPosterTexture('#f0e6c8', '#cbb98f', [
+      { text: 'BOOK', y: 266, color: '#2a2216', font: 'bold 88px Georgia, serif' }
+    ])
+  });
+
+  var bookOverlay = new THREE.Group();
+  bookOverlay.visible = false;
+  camera.add(bookOverlay);
+
+  var closedBook = new THREE.Mesh(new THREE.BoxGeometry(pageW0 * 0.56, pageH0 * 1.04, 0.2), bookCoverMat);
+  bookOverlay.add(closedBook);
+
+  var pagesGroup = new THREE.Group();
+  pagesGroup.visible = false;
+  bookOverlay.add(pagesGroup);
+
+  var spineThickness = 0.05;
+  pagesGroup.add(new THREE.Mesh(new THREE.BoxGeometry(spineThickness, pageH0 * 1.02, 0.06), bookSpineMat));
+
+  // Each page is offset half a page-width away from its own hinge pivot,
+  // so rotating the pivot swings the whole page like a door — same
+  // convention as the appliance door/lid hinges elsewhere in this file.
+  var leftPivot = new THREE.Group();
+  leftPivot.position.x = -spineThickness / 2;
+  pagesGroup.add(leftPivot);
+  var leftPage = new THREE.Mesh(new THREE.PlaneGeometry(pageW0, pageH0), leftPageMat);
+  leftPage.position.x = -pageW0 / 2;
+  leftPivot.add(leftPage);
+
+  var rightPivot = new THREE.Group();
+  rightPivot.position.x = spineThickness / 2;
+  pagesGroup.add(rightPivot);
+  var rightPage = new THREE.Mesh(new THREE.PlaneGeometry(pageW0, pageH0), rightPageMat);
+  rightPage.position.x = pageW0 / 2;
+  rightPivot.add(rightPage);
+
+  // Closed: both pages rotated edge-on (90°) so they fold flat against
+  // each other, hidden behind the closedBook box. Open: both flat (0°),
+  // coplanar and facing the camera directly, like a scanned book spread.
+  var CLOSED_LEFT = Math.PI / 2, CLOSED_RIGHT = -Math.PI / 2, PAGE_OPEN = 0;
+  var BOOK_START_SCALE = 0.12;
+  var bookStartPos = new THREE.Vector3(0, -1.3, -5.5);
+  var bookFlyDepth = 1.4;
+
+  var bookSequencer = null;
+  var bookShowing = false; // fully open, idle, waiting for a dismiss tap
+  function bookBusy() { return bookShowing || (bookSequencer && !bookSequencer.done); }
+
+  function openBook() {
+    if (bookBusy()) return;
+    var vFov = camera.fov * Math.PI / 180;
+    var visibleH = 2 * bookFlyDepth * Math.tan(vFov / 2);
+    var visibleW = visibleH * camera.aspect;
+    // Fill 78% of whichever screen dimension is more restrictive, so the
+    // open spread neither overflows the width nor the height.
+    var finalScale = Math.min((0.78 * visibleW) / (pageW0 * 2), (0.78 * visibleH) / pageH0);
+    var endPos = new THREE.Vector3(0, 0, -bookFlyDepth);
+
+    bookOverlay.visible = true;
+    bookOverlay.position.copy(bookStartPos);
+    bookOverlay.scale.setScalar(BOOK_START_SCALE);
+    bookOverlay.rotation.set(0, 0, 0);
+    closedBook.visible = true;
+    pagesGroup.visible = false;
+    leftPivot.rotation.y = CLOSED_LEFT;
+    rightPivot.rotation.y = CLOSED_RIGHT;
+
+    bookSequencer = new Sequencer([
+      // Fly in from small/distant to screen-filling size, with a
+      // flourish spin that lands back on an upright 0° (4 full turns).
+      {
+        duration: 650,
+        update: function (t) {
+          var e = t * t * (3 - 2 * t);
+          bookOverlay.position.lerpVectors(bookStartPos, endPos, e);
+          bookOverlay.scale.setScalar(BOOK_START_SCALE + (finalScale - BOOK_START_SCALE) * e);
+          bookOverlay.rotation.y = e * Math.PI * 4;
+        },
+        onEnd: function () {
+          bookOverlay.rotation.y = 0;
+          closedBook.visible = false;
+          pagesGroup.visible = true;
+        }
+      },
+      // Swing both pages open.
+      {
+        duration: 500,
+        update: function (t) {
+          var e = t * t * (3 - 2 * t);
+          leftPivot.rotation.y = CLOSED_LEFT + (PAGE_OPEN - CLOSED_LEFT) * e;
+          rightPivot.rotation.y = CLOSED_RIGHT + (PAGE_OPEN - CLOSED_RIGHT) * e;
+        },
+        onEnd: function () { bookShowing = true; }
+      }
+    ]);
+  }
+
+  function dismissBook() {
+    if (!bookShowing) return;
+    bookShowing = false;
+    var startPos = bookOverlay.position.clone();
+    var startScale = bookOverlay.scale.x;
+
+    bookSequencer = new Sequencer([
+      // Swing both pages shut, then swap back to the closed-book mesh.
+      {
+        duration: 400,
+        update: function (t) {
+          var e = t * t * (3 - 2 * t);
+          leftPivot.rotation.y = PAGE_OPEN + (CLOSED_LEFT - PAGE_OPEN) * e;
+          rightPivot.rotation.y = PAGE_OPEN + (CLOSED_RIGHT - PAGE_OPEN) * e;
+        },
+        onEnd: function () {
+          pagesGroup.visible = false;
+          closedBook.visible = true;
+        }
+      },
+      // Fly back down to small/distant, mirroring the entrance.
+      {
+        duration: 550,
+        update: function (t) {
+          var e = t * t * (3 - 2 * t);
+          bookOverlay.position.lerpVectors(startPos, bookStartPos, e);
+          bookOverlay.scale.setScalar(startScale + (BOOK_START_SCALE - startScale) * e);
+          bookOverlay.rotation.y = e * Math.PI * 4;
+        },
+        onEnd: function () { bookOverlay.visible = false; }
+      }
+    ]);
+  }
+
+  // ---------- click / tap detection on machines and books ----------
   var raycaster = new THREE.Raycaster();
   var pointerNDC = new THREE.Vector2();
   var pointerDownInfo = null;
@@ -1485,6 +1649,15 @@
     return machineFromIntersect(raycaster.intersectObjects(machines, true));
   }
 
+  function pickBook(clientX, clientY) {
+    var rect = renderer.domElement.getBoundingClientRect();
+    pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointerNDC, camera);
+    var hits = raycaster.intersectObjects(books, false);
+    return hits.length ? hits[0].object : null;
+  }
+
   renderer.domElement.addEventListener('pointerdown', function (e) {
     pointerDownInfo = { x: e.clientX, y: e.clientY, t: performance.now() };
   });
@@ -1495,13 +1668,21 @@
     var elapsed = performance.now() - pointerDownInfo.t;
     pointerDownInfo = null;
     if (moved > 6 || elapsed > 600) return; // was a drag/orbit, not a tap
+    if (bookShowing) { dismissBook(); return; }
     if (sequencer && !sequencer.done) return;
+    if (bookSequencer && !bookSequencer.done) return;
     var hit = pick(e.clientX, e.clientY);
-    if (hit) startDogShow(hit);
+    if (hit) { startDogShow(hit); return; }
+    var bookHit = pickBook(e.clientX, e.clientY);
+    if (bookHit) openBook();
   });
   renderer.domElement.addEventListener('pointermove', function (e) {
-    if (sequencer && !sequencer.done) { renderer.domElement.style.cursor = 'default'; return; }
-    var hit = pick(e.clientX, e.clientY);
+    if (bookShowing) { renderer.domElement.style.cursor = 'pointer'; return; }
+    if ((sequencer && !sequencer.done) || (bookSequencer && !bookSequencer.done)) {
+      renderer.domElement.style.cursor = 'default';
+      return;
+    }
+    var hit = pick(e.clientX, e.clientY) || pickBook(e.clientX, e.clientY);
     renderer.domElement.style.cursor = hit ? 'pointer' : 'default';
   });
 
@@ -1556,6 +1737,7 @@
     requestAnimationFrame(animate);
     controls.update();
     if (sequencer && !sequencer.done) sequencer.tick(performance.now());
+    if (bookSequencer && !bookSequencer.done) bookSequencer.tick(performance.now());
     renderer.render(scene, camera);
   }
   animate();

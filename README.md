@@ -19,6 +19,8 @@ Each machine has a number on its control panel — washers 1-5, dryers 6-10.
 
 Click (or tap) any washer or dryer: a dog walks in through the doorway, opens it, pulls the laundry into its mouth and shakes it, carries it to the middle of the room and spits it out, pees on it, then breathes fire on it until it burns to nothing, before heading back out.
 
+Somewhere in the room is a messy pile of books — click (or tap) any one of them and a book flies in and opens up to fill most of the screen. Click again anywhere to close it.
+
 ## Viewing it
 
 Open `index.html` directly in Chrome, Firefox, or Safari — double-click the file or run:
