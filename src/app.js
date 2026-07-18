@@ -760,6 +760,8 @@
   // front-left floor area — the far corner from the initial camera's focus
   // (washer 5 / the doorway, back-right), so it's tucked out of the way
   // rather than front-and-center.
+  var bookPageMat = new THREE.MeshStandardMaterial({ color: 0xf0e6c8, roughness: 0.85 });
+
   function createBookPile(count) {
     var g = new THREE.Group();
     var colors = [
@@ -780,10 +782,17 @@
       var bw = 0.14 + Math.random() * 0.07;
       var bt = 0.028 + Math.random() * 0.018;
       var bd = 0.19 + Math.random() * 0.07;
-      var mat = new THREE.MeshStandardMaterial({
+      var coverMat = new THREE.MeshStandardMaterial({
         color: colors[Math.floor(Math.random() * colors.length)], roughness: 0.55
       });
-      var book = new THREE.Mesh(new THREE.BoxGeometry(bw, bt, bd), mat);
+      // Book lies flat: width along X, thickness along Y, depth along Z.
+      // BoxGeometry's per-face material order is [+X,-X,+Y,-Y,+Z,-Z] —
+      // spine (-X) plus front/back cover (+Y/-Y) get the cover color; the
+      // fore-edge (+X) and top/bottom edges (+Z/-Z) are the cream page block.
+      var book = new THREE.Mesh(
+        new THREE.BoxGeometry(bw, bt, bd),
+        [bookPageMat, coverMat, coverMat, coverMat, bookPageMat, bookPageMat]
+      );
       book.position.set(
         col.x + (Math.random() - 0.5) * 0.05,
         col.h + bt / 2,
@@ -801,8 +810,11 @@
     addShadowFlags(g);
     return g;
   }
-  var bookPile = createBookPile(45);
-  bookPile.position.set(0.7, 0, 4.0);
+  // Deliberately placed well outside the initial camera's field of view —
+  // an easter egg only found by orbiting around. (Off past the room's open
+  // x=0 edge, where there's no wall anyway.)
+  var bookPile = createBookPile(90);
+  bookPile.position.set(-2.8, 0, 1.3);
   scene.add(bookPile);
 
   // ---------- click-to-play dog animation ----------
