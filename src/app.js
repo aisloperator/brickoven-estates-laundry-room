@@ -139,19 +139,25 @@
 
   // Each machine gets its own texture (not a shared one) since the label
   // — its identifying number — differs per machine.
-  function createLogoTexture(label) {
+  // showCommercial/mainFontSize let the front-load washers keep the
+  // original smaller label + "COMMERCIAL" subtitle, while every other
+  // machine gets a bigger label with no subtitle (see makeFrontLoad's
+  // isFrontLoadWasher and makeTopLoad).
+  function createLogoTexture(label, showCommercial, mainFontSize) {
     var cnv = makeCanvas(512, 128);
     var ctx = cnv.getContext('2d');
     ctx.fillStyle = '#2e2e2e';
     ctx.fillRect(0, 0, 512, 128);
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 46px Arial, sans-serif';
+    ctx.font = 'bold ' + mainFontSize + 'px Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(label, 256, 52);
-    ctx.font = '20px Arial, sans-serif';
-    ctx.fillStyle = '#c9c9c9';
-    ctx.fillText('C O M M E R C I A L', 256, 92);
+    ctx.fillText(label, 256, showCommercial ? 52 : 64);
+    if (showCommercial) {
+      ctx.font = '20px Arial, sans-serif';
+      ctx.fillStyle = '#c9c9c9';
+      ctx.fillText('C O M M E R C I A L', 256, 92);
+    }
     var tex = new THREE.CanvasTexture(cnv);
     tex.anisotropy = 4;
     tex.encoding = THREE.sRGBEncoding;
@@ -358,9 +364,10 @@
     });
   }
 
-  function decalPlane(w, h, label) {
+  function decalPlane(w, h, label, showCommercial, mainFontSize) {
     var geo = new THREE.PlaneGeometry(w, h);
-    var mat = new THREE.MeshStandardMaterial({ map: createLogoTexture(label), roughness: 0.5, metalness: 0.1 });
+    var tex = createLogoTexture(label, showCommercial, mainFontSize);
+    var mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, metalness: 0.1 });
     return new THREE.Mesh(geo, mat);
   }
 
@@ -455,7 +462,10 @@
 
     // Sits flush against the panel's own front face, not a fixed offset
     // from the cabinet, so it tracks panelThickness if that ever changes.
-    var decal = decalPlane(width * 0.8, panelH * 0.7, label);
+    // Only the round-door style is a front-load washer (dryers use 'rect')
+    // — everyone else gets a bigger label with no "COMMERCIAL" subtitle.
+    var isFrontLoadWasher = doorStyle !== 'rect';
+    var decal = decalPlane(width * 0.8, panelH * 0.7, label, isFrontLoadWasher, isFrontLoadWasher ? 46 : 58);
     decal.position.set(0, height - panelH / 2 - 0.03, panelZ + panelThickness / 2 + 0.005);
     g.add(decal);
 
@@ -546,7 +556,9 @@
     console_.position.set(0, consoleY, consoleZ);
     g.add(console_);
 
-    var decal = decalPlane(width * 0.75, height * 0.1, label);
+    // Top-load washers aren't front-load washers either — bigger label, no
+    // "COMMERCIAL" subtitle, same as the dryers.
+    var decal = decalPlane(width * 0.75, height * 0.1, label, false, 58);
     decal.position.set(0, consoleY, consoleZ + 0.045);
     g.add(decal);
 
