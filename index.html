@@ -1922,6 +1922,34 @@
     };
   }
 
+  // A straight line between the doorway and a washer's stand position can
+  // cut across the back wall's cabinet zone (z up to ~0.95) diagonally,
+  // clipping through whichever washer sits between the doorway and the
+  // target — the doorway is on the same wall as the washers, unlike the
+  // dryer wall. Routes through an intermediate point instead: first get to
+  // the depth (z) of whichever endpoint is farther from the wall — that
+  // "strafing" leg then only ever moves at a z beyond every cabinet's
+  // front face — then close the remaining single-axis gap. Degenerate
+  // (zero-length) legs are dropped. Safe (if unnecessary) for dryer
+  // targets too, so it's used for every walk to/from the doorway.
+  function safeBackWallPath(from, to, speed) {
+    var safeZ = Math.max(from.z, to.z);
+    var viaFrom = new THREE.Vector3(from.x, 0, safeZ);
+    var viaTo = new THREE.Vector3(to.x, 0, safeZ);
+    var steps = [];
+    var finalHeading;
+    if (Math.abs(from.z - safeZ) > 0.01) {
+      steps.push(walkStep(from, viaFrom, Math.atan2(viaFrom.x - from.x, viaFrom.z - from.z), speed));
+    }
+    finalHeading = Math.atan2(viaTo.x - viaFrom.x, viaTo.z - viaFrom.z);
+    steps.push(walkStep(viaFrom, viaTo, finalHeading, speed));
+    if (Math.abs(to.z - safeZ) > 0.01) {
+      finalHeading = Math.atan2(to.x - viaTo.x, to.z - viaTo.z);
+      steps.push(walkStep(viaTo, to, finalHeading, speed));
+    }
+    return { steps: steps, finalHeading: finalHeading };
+  }
+
   function createLaundryPile() {
     var g = new THREE.Group();
     var colors = [0xd94f4f, 0x3f7cd6, 0xf2f2ef, 0x4fae5c, 0xe0c23c, 0x9a5fc9];
@@ -1994,8 +2022,10 @@
     backUpPos.y = 0;
 
     var enterHeading = Math.atan2(doorwayPos.x - outsidePos.x, doorwayPos.z - outsidePos.z);
-    var approachHeading = Math.atan2(standPos.x - doorwayPos.x, standPos.z - doorwayPos.z);
-    var exitHeadingA = Math.atan2(doorwayPos.x - backUpPos.x, doorwayPos.z - backUpPos.z);
+    var approachPath = safeBackWallPath(doorwayPos, standPos, 1.6);
+    var approachHeading = approachPath.finalHeading;
+    var exitPath = safeBackWallPath(backUpPos, doorwayPos, 1.7);
+    var exitHeadingA = exitPath.finalHeading;
     var exitHeadingB = Math.atan2(outsidePos.x - doorwayPos.x, outsidePos.z - doorwayPos.z);
 
     var laundry = createLaundryPile();
@@ -2016,7 +2046,10 @@
 
     var steps = [
       walkStep(outsidePos, doorwayPos, enterHeading, 1.6),
-      walkStep(doorwayPos, standPos, approachHeading, 1.6),
+      // Routed via safeBackWallPath (not a direct walkStep) so the dog
+      // doesn't cut diagonally through whichever washer sits between the
+      // doorway and the target.
+      ...approachPath.steps,
       turnStep(approachHeading, machineHeading, 260),
 
       // Open the door / lid.
@@ -2210,7 +2243,7 @@
         }
       },
       turnStep(carryHeading, exitHeadingA, 260),
-      walkStep(backUpPos, doorwayPos, exitHeadingA, 1.7),
+      ...exitPath.steps,
       turnStep(exitHeadingA, exitHeadingB, 200)
     ];
     var finalWalk = walkStep(doorwayPos, outsidePos, exitHeadingB, 1.7);
