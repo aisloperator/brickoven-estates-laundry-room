@@ -1472,7 +1472,12 @@
   // boundary, into open air past the wall's edge, resolves the tie.
   trimBox(doorGapStart - 0.037, doorHeight / 2, -WALL_T / 2, 0.086, doorHeight, WALL_T + 0.04);
   trimBox(doorGapEnd + 0.037, doorHeight / 2, -WALL_T / 2, 0.086, doorHeight, WALL_T + 0.04);
-  trimBox((doorGapStart + doorGapEnd) / 2, doorHeight + 0.04, -WALL_T / 2, (doorGapEnd - doorGapStart) + 0.16, 0.08, WALL_T + 0.04);
+  // Same coplanar-face issue as the jamb posts above, but horizontal: this
+  // trim's bottom face used to land exactly at y=doorHeight, precisely
+  // where the brick header box's own bottom face already sits. Dropping
+  // it 0.006 lower (past doorHeight, into the open doorway) breaks the tie
+  // the same way the jambs' inner-edge nudge does.
+  trimBox((doorGapStart + doorGapEnd) / 2, doorHeight + 0.037, -WALL_T / 2, (doorGapEnd - doorGapStart) + 0.16, 0.086, WALL_T + 0.04);
 
   // Right wall runs along Z at X = ROOM_W
   var rightWall = new THREE.Mesh(new THREE.BoxGeometry(WALL_T, WALL_H, ROOM_D), wallMatSide);
