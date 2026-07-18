@@ -756,6 +756,55 @@
     scene.add(backPoster);
   }
 
+  // A messy pile of dozens of solid-colored hardcover books, in the open
+  // front-left floor area — the far corner from the initial camera's focus
+  // (washer 5 / the doorway, back-right), so it's tucked out of the way
+  // rather than front-and-center.
+  function createBookPile(count) {
+    var g = new THREE.Group();
+    var colors = [
+      0xb33a3a, 0x2e5fa3, 0x2f8f4e, 0xd4a017, 0x6b3fa0, 0x1f8a8a,
+      0xd2691e, 0x8a3b5c, 0x3a3a8a, 0x4a7c2f, 0xc9822e, 0x5c2e8a
+    ];
+    // A handful of loose "columns" so books pile up in stacks rather than
+    // floating independently, like they'd actually settle when dropped.
+    var numCols = 6;
+    var cols = [];
+    for (var c = 0; c < numCols; c++) {
+      var ang = Math.random() * Math.PI * 2;
+      var r = Math.random() * 0.28;
+      cols.push({ x: Math.cos(ang) * r, z: Math.sin(ang) * r, h: 0 });
+    }
+    for (var i = 0; i < count; i++) {
+      var col = cols[i % numCols];
+      var bw = 0.14 + Math.random() * 0.07;
+      var bt = 0.028 + Math.random() * 0.018;
+      var bd = 0.19 + Math.random() * 0.07;
+      var mat = new THREE.MeshStandardMaterial({
+        color: colors[Math.floor(Math.random() * colors.length)], roughness: 0.55
+      });
+      var book = new THREE.Mesh(new THREE.BoxGeometry(bw, bt, bd), mat);
+      book.position.set(
+        col.x + (Math.random() - 0.5) * 0.05,
+        col.h + bt / 2,
+        col.z + (Math.random() - 0.5) * 0.05
+      );
+      book.rotation.y = Math.random() * Math.PI * 2;
+      if (Math.random() < 0.12) {
+        // An occasional askew, half-toppled book for a natural messy look.
+        book.rotation.x = (Math.random() - 0.5) * 0.5;
+        book.rotation.z = (Math.random() - 0.5) * 0.5;
+      }
+      col.h += bt + 0.002;
+      g.add(book);
+    }
+    addShadowFlags(g);
+    return g;
+  }
+  var bookPile = createBookPile(45);
+  bookPile.position.set(0.7, 0, 4.0);
+  scene.add(bookPile);
+
   // ---------- click-to-play dog animation ----------
   // A tiny sequential animator: each step runs for `duration` ms, calling
   // update(t) every frame with t in [0,1], then onEnd() before the next step.
