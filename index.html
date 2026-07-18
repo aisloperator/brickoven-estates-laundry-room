@@ -86,7 +86,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T03:33:59Z</span></a>
+<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T03:40:26Z</span></a>
 <div id="hint">Drag to orbit &middot; scroll or pinch to zoom &middot; right-drag or two-finger drag to pan &middot; click a machine to see what happens</div>
 <div id="fallback"><div>Your browser could not start WebGL, which this 3D room preview requires.<br>Please try the latest version of Chrome, Firefox, or Safari.</div></div>
 <script>
@@ -1676,6 +1676,22 @@
     return centers;
   }
 
+  // ---------- layout helper: like layoutRow, but keyed off one item's fixed
+  // center instead of centering the whole row in a span ----------
+  function layoutRowAnchored(widths, gap, anchorIndex, anchorCenter) {
+    var centers = new Array(widths.length);
+    centers[anchorIndex] = anchorCenter;
+    for (var i = anchorIndex - 1; i >= 0; i--) {
+      centers[i] = centers[i + 1] - (widths[i + 1] / 2 + gap + widths[i] / 2);
+    }
+    for (var j = anchorIndex + 1; j < widths.length; j++) {
+      centers[j] = centers[j - 1] + (widths[j - 1] / 2 + gap + widths[j] / 2);
+    }
+    return centers;
+  }
+
+  var INCH = 0.0254;
+
   // Machines a user can click to trigger the dog animation.
   var machines = [];
 
@@ -1687,7 +1703,11 @@
   // front of the console rather than at the cabinet's back edge.
   var tlW = 0.68, tlD = 0.8, tlH = 1.05;
   var washerWidths = [flW, flW, tlW, tlW, tlW];
-  var washerCenters = layoutRow(washerWidths, 0.35, doorGapStart - 0.25, 0.16);
+  // Washer 5 (last/rightmost) is anchored at the position the old evenly-
+  // centered layout put it, then the rest of the row is laid out from there
+  // with a tight 1-inch gap, so washer 5 doesn't move.
+  var washer5AnchorX = layoutRow(washerWidths, 0.35, doorGapStart - 0.25, 0.16)[washerWidths.length - 1];
+  var washerCenters = layoutRowAnchored(washerWidths, INCH, washerWidths.length - 1, washer5AnchorX);
 
   // Machine numbers: washers 1-5 left to right, dryer 6 (standalone, nearest
   // the doorway), then the 2x2 stacked array 7-10 (top/bottom of the first
@@ -1709,7 +1729,11 @@
   // ---------- place dryers on right wall (facing -X into the room) ----------
   var dfW = 0.72, dfD = 0.70;
   var dryerWidths = [dfW, dfW, dfW]; // standalone, stack col 1, stack col 2
-  var dryerCenters = layoutRow(dryerWidths, 0.35, ROOM_D - 0.35, 0.22);
+  // Dryer 6 (standalone, first) is anchored at the position the old evenly-
+  // centered layout put it, then the two stacks are laid out from there
+  // with a tight 1-inch gap, so dryer 6 doesn't move.
+  var dryer6AnchorZ = layoutRow(dryerWidths, 0.35, ROOM_D - 0.35, 0.22)[0];
+  var dryerCenters = layoutRowAnchored(dryerWidths, INCH, 0, dryer6AnchorZ);
 
   var standaloneDryer = makeFrontLoad(dfW, 1.0, dfD, bodyWhite, 'rect', undefined, 6, 'DRYER 6');
   standaloneDryer.rotation.y = -Math.PI / 2;
