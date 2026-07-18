@@ -281,7 +281,7 @@
 
   // Local convention: appliance footprint centered on X, back face at Z=0, front face at Z=depth, base at Y=0.
   // doorStyle: 'round' (default, chrome-rimmed glass circle) or 'rect' (white rounded-rectangle panel).
-  function makeFrontLoad(width, height, depth, bodyMat, doorStyle) {
+  function makeFrontLoad(width, height, depth, bodyMat, doorStyle, extraPanelH) {
     var g = new THREE.Group();
 
     var cabinet = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), bodyMat);
@@ -289,7 +289,12 @@
     g.add(cabinet);
 
     var doorR = Math.min(width, height) * 0.32;
-    var doorY = height * 0.42;
+    // Control panel height/position, worked out before the door so a taller
+    // panel (extraPanelH) can push the door down to keep clear of it rather
+    // than the two overlapping.
+    var panelH = height * 0.16 + (extraPanelH || 0);
+    var panelBottom = height - panelH - 0.03;
+    var doorY = Math.min(height * 0.42, panelBottom - 0.04 - doorR - 0.035);
 
     // Dark recessed drum, visible once the door swings open.
     var drum = new THREE.Mesh(new THREE.CylinderGeometry(doorR - 0.01, doorR - 0.01, 0.02, 24), drumDarkMat);
@@ -326,7 +331,6 @@
       doorPivot.add(glass);
     }
 
-    var panelH = height * 0.16;
     var panel = new THREE.Mesh(new THREE.BoxGeometry(width * 0.92, panelH, 0.05), panelBlue);
     panel.position.set(0, height - panelH / 2 - 0.03, depth + 0.02);
     g.add(panel);
@@ -490,7 +494,8 @@
   var machines = [];
 
   // ---------- place washers on back wall (facing +Z into the room) ----------
-  var flW = 0.72, flD = 0.70, flH = 1.00;
+  var FOOT = 0.3048;
+  var flW = 0.72, flD = 0.70, flH = 1.00 + FOOT;
   // Deeper than a front-loader: the top-load lid needs to be roughly
   // square (see makeTopLoad) and still clear its hinge, which sits in
   // front of the console rather than at the cabinet's back edge.
@@ -501,7 +506,7 @@
   for (var wi = 0; wi < washerWidths.length; wi++) {
     var unit;
     if (wi < 2) {
-      unit = makeFrontLoad(flW, flH, flD, bodyWhite);
+      unit = makeFrontLoad(flW, flH, flD, bodyWhite, undefined, FOOT);
     } else {
       unit = makeTopLoad(tlW, tlH, tlD, bodyAlmond);
     }
