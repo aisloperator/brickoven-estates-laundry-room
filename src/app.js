@@ -818,12 +818,15 @@
   // that runs parallel to, and is the room's opposite side from, the
   // washer wall), and one further along that same z=ROOM_D edge. This
   // whole area is well clear of every appliance regardless of x, since no
-  // machine's footprint extends anywhere near z=ROOM_D.
+  // machine's footprint extends anywhere near z=ROOM_D. Pushed right up
+  // against their respective edges (small edgeInset, just enough to clear
+  // a stack's own radius) and spaced at half their original separation.
+  var edgeInset = 0.2;
   var cornerStackSpecs = [
-    { x: 0.35, z: 4.25, count: 23 },  // tight in the corner
-    { x: 0.35, z: 3.59, count: 23 },  // a few inches along the x=0 edge
-    { x: 1.01, z: 4.25, count: 22 },  // a few inches along the far (z=ROOM_D) edge
-    { x: 2.00, z: 4.25, count: 22 }   // further along that same far edge
+    { x: edgeInset, z: ROOM_D - edgeInset, count: 23 },        // tight in the corner
+    { x: edgeInset, z: ROOM_D - edgeInset - 0.33, count: 23 }, // along the x=0 edge
+    { x: edgeInset + 0.33, z: ROOM_D - edgeInset, count: 22 }, // along the far (z=ROOM_D) edge
+    { x: edgeInset + 0.825, z: ROOM_D - edgeInset, count: 22 } // further along that same far edge
   ];
   cornerStackSpecs.forEach(function (spec) {
     var stack = createBookPile(spec.count, 3, 0.16);
