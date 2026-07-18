@@ -158,6 +158,29 @@
     return tex;
   }
 
+  function createPosterTexture() {
+    var cnv = makeCanvas(512, 330);
+    var ctx = cnv.getContext('2d');
+    ctx.fillStyle = '#f2ede1';
+    ctx.fillRect(0, 0, 512, 330);
+    ctx.strokeStyle = '#c9c0a8';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(10, 10, 492, 310);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#2a2a28';
+    ctx.font = 'bold 34px Arial, sans-serif';
+    ctx.fillText("Please don't use dryer fabric sheets,", 256, 125);
+    ctx.fillText('wool balls, etc.', 256, 170);
+    ctx.font = '24px Arial, sans-serif';
+    ctx.fillStyle = '#5a5650';
+    ctx.fillText('They make some neighbors sick', 256, 235);
+    var tex = new THREE.CanvasTexture(cnv);
+    tex.anisotropy = 4;
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
   var brickTex = createBrickTexture(0xb5522b, ROOM_W / 1.4, WALL_H / 1.4);
   var brickTexSide = createBrickTexture(0xb5522b, ROOM_D / 1.4, WALL_H / 1.4);
   var floorTex = createFloorTexture();
@@ -560,6 +583,32 @@
       if (child.userData && child.userData.isMachineRoot) machines.push(child);
     });
   });
+
+  // A framed poster, front face at local +Z (same convention as the
+  // appliances) so it can be placed on the dryer wall the same way they are.
+  function makePoster(width, height) {
+    var g = new THREE.Group();
+    var frameThickness = 0.035;
+    var frameMat = new THREE.MeshStandardMaterial({ color: 0x3b2e22, roughness: 0.6 });
+    var frame = new THREE.Mesh(new THREE.BoxGeometry(width + 0.08, height + 0.08, frameThickness), frameMat);
+    frame.position.set(0, 0, frameThickness / 2);
+    g.add(frame);
+
+    var faceMat = new THREE.MeshStandardMaterial({ map: createPosterTexture(), roughness: 0.7 });
+    var face = new THREE.Mesh(new THREE.PlaneGeometry(width, height), faceMat);
+    face.position.set(0, 0, frameThickness + 0.005);
+    g.add(face);
+
+    addShadowFlags(g);
+    return g;
+  }
+
+  // Mounted over dryer 6 (the standalone unit, dryerCenters[0]), centered in
+  // the wall space between its cabinet top and the top of the wall.
+  var poster = makePoster(0.85, 0.55);
+  poster.rotation.y = -Math.PI / 2;
+  poster.position.set(ROOM_W - 0.02, 1.9, dryerCenters[0]);
+  scene.add(poster);
 
   // ---------- click-to-play dog animation ----------
   // A tiny sequential animator: each step runs for `duration` ms, calling
