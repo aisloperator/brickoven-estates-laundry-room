@@ -1520,7 +1520,10 @@
     // of the console instead of just swinging up and away from it. Pushed
     // close to the cabinet's back edge to leave as much depth as possible
     // for the (approximately square) lid in front of it.
-    var consoleY = tubY + height * 0.05 + (height * 0.14) / 2;
+    // Flush with the top of the cabinet (tubY), not the top of the lid
+    // (tubY + lidH) — the console sits at a different z than the lid (see
+    // hingeZ below) so there's no overlap either way.
+    var consoleY = tubY + (height * 0.14) / 2;
     var consoleZ = depth * 0.07;
     var consoleD = 0.08;
     var consoleFrontZ = consoleZ + consoleD / 2;
