@@ -242,7 +242,8 @@
   var bodyWhite = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, roughness: 0.45, metalness: 0.15 });
   var bodyAlmond = new THREE.MeshStandardMaterial({ color: 0xece6d8, roughness: 0.5, metalness: 0.1 });
   var doorGlass = new THREE.MeshStandardMaterial({
-    color: 0x14161b, roughness: 0.12, metalness: 0.3, transparent: true, opacity: 0.6
+    color: 0x14161b, roughness: 0.12, metalness: 0.3,
+    transparent: true, opacity: 0.25, depthWrite: false
   });
   // Moderate (not near-1) metalness: this scene has no environment map, so a
   // near-fully-metallic material has almost no diffuse reflectance and reads
