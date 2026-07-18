@@ -89,7 +89,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T04:45:50Z</span></a>
+<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T04:51:06Z</span></a>
 <div id="hint">Drag to orbit &middot; scroll or pinch to zoom &middot; right-drag or two-finger drag to pan &middot; click a machine to see what happens</div>
 <div id="fallback"><div>Your browser could not start WebGL, which this 3D room preview requires.<br>Please try the latest version of Chrome, Firefox, or Safari.</div></div>
 <script>
@@ -1481,8 +1481,11 @@
   baseboard(ROOM_W - 0.05, ROOM_D / 2, 0.1, ROOM_D);
 
   // ---------- appliance materials ----------
-  var bodyWhite = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, roughness: 0.45, metalness: 0.15 });
-  var bodyAlmond = new THREE.MeshStandardMaterial({ color: 0xece6d8, roughness: 0.5, metalness: 0.1 });
+  // One shared white for every appliance surface (cabinets, doors, lids,
+  // panels/consoles) — previously 3 slightly different off-whites. Kept off
+  // pure white and reasonably matte (not glossy/metallic) so shading and
+  // shadows still read clearly rather than blowing out.
+  var applianceWhite = new THREE.MeshStandardMaterial({ color: 0xededea, roughness: 0.45, metalness: 0.1 });
   var doorGlass = new THREE.MeshStandardMaterial({
     color: 0x14161b, roughness: 0.12, metalness: 0.3,
     transparent: true, opacity: 0.25, depthWrite: false
@@ -1508,7 +1511,6 @@
   }
 
   var drumDarkMat = new THREE.MeshStandardMaterial({ color: 0x08090b, roughness: 0.6 });
-  var doorWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf4f4f2, roughness: 0.4, metalness: 0.08 });
 
   // A rounded-rectangle outline centered on its own origin, for the flat
   // washer door panel (ShapeGeometry gives it a +Z-facing normal already,
@@ -1565,7 +1567,7 @@
       var doorThickness = 0.0225;
       var doorShape = roundedRectShape(doorW, doorH, doorR * 0.4);
       var doorGeo = new THREE.ExtrudeGeometry(doorShape, { depth: doorThickness, bevelEnabled: false, curveSegments: 12 });
-      var doorPanel = new THREE.Mesh(doorGeo, doorWhiteMat);
+      var doorPanel = new THREE.Mesh(doorGeo, applianceWhite);
       doorPanel.position.set(doorHalfW, 0, 0);
       doorPivot.add(doorPanel);
     } else {
@@ -1593,7 +1595,7 @@
 
     var panelThickness = 0.025;
     var panelZ = depth + 0.02;
-    var panel = new THREE.Mesh(new THREE.BoxGeometry(width * 0.92, panelH, panelThickness), doorWhiteMat);
+    var panel = new THREE.Mesh(new THREE.BoxGeometry(width * 0.92, panelH, panelThickness), applianceWhite);
     panel.position.set(0, height - panelH / 2 - 0.03, panelZ);
     g.add(panel);
 
@@ -1674,7 +1676,7 @@
     var lidCorner = Math.min(lidW, lidDepth) * 0.15;
     var lidShape = roundedRectShape(lidW, lidDepth, lidCorner);
     var lidGeo = new THREE.ExtrudeGeometry(lidShape, { depth: lidH, bevelEnabled: false, curveSegments: 10 });
-    var lid = new THREE.Mesh(lidGeo, doorWhiteMat);
+    var lid = new THREE.Mesh(lidGeo, applianceWhite);
     lid.rotation.x = -Math.PI / 2;
     lid.position.set(0, 0, lidDepth / 2);
     lidPivot.add(lid);
@@ -1686,7 +1688,7 @@
     tub.position.set(0, tubY + 0.005, hingeZ + lidDepth / 2);
     g.add(tub);
 
-    var console_ = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, height * 0.14, consoleD), doorWhiteMat);
+    var console_ = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, height * 0.14, consoleD), applianceWhite);
     console_.position.set(0, consoleY, consoleZ);
     g.add(console_);
 
@@ -1731,9 +1733,9 @@
   function makeStackedDryerColumn(width, depth, topNumber, topLabel, bottomNumber, bottomLabel) {
     var g = new THREE.Group();
     var h1 = 0.98, h2 = 0.95;
-    var bottom = makeFrontLoad(width, h1, depth, bodyWhite, 'rect', undefined, bottomNumber, bottomLabel);
+    var bottom = makeFrontLoad(width, h1, depth, applianceWhite, 'rect', undefined, bottomNumber, bottomLabel);
     g.add(bottom);
-    var top = makeFrontLoad(width, h2, depth, bodyWhite, 'rect', undefined, topNumber, topLabel);
+    var top = makeFrontLoad(width, h2, depth, applianceWhite, 'rect', undefined, topNumber, topLabel);
     top.position.y = h1 + 0.03;
     g.add(top);
     var seam = new THREE.Mesh(new THREE.BoxGeometry(width + 0.01, 0.03, depth + 0.01), legMat);
@@ -1800,9 +1802,9 @@
     var washerLabel = 'WASHER ' + washerNumber;
     var thisWasherDepth = wi < 2 ? flD : tlD;
     if (wi < 2) {
-      unit = makeFrontLoad(flW, flH, flD, bodyWhite, undefined, FOOT, washerNumber, washerLabel);
+      unit = makeFrontLoad(flW, flH, flD, applianceWhite, undefined, FOOT, washerNumber, washerLabel);
     } else {
-      unit = makeTopLoad(tlW, tlH, tlD, bodyAlmond, washerNumber, washerLabel);
+      unit = makeTopLoad(tlW, tlH, tlD, applianceWhite, washerNumber, washerLabel);
     }
     unit.position.set(washerCenters[wi], 0, WALL_T);
     scene.add(unit);
@@ -1824,7 +1826,7 @@
   var dryer6AnchorZ = layoutRow(dryerWidths, 0.35, ROOM_D - 0.35, 0.22)[0];
   var dryerCenters = layoutRowAnchored(dryerWidths, INCH, 0, dryer6AnchorZ);
 
-  var standaloneDryer = makeFrontLoad(dfW, 1.0, dfD, bodyWhite, 'rect', undefined, 6, 'DRYER 6');
+  var standaloneDryer = makeFrontLoad(dfW, 1.0, dfD, applianceWhite, 'rect', undefined, 6, 'DRYER 6');
   standaloneDryer.rotation.y = -Math.PI / 2;
   standaloneDryer.position.set(ROOM_W - WALL_T, 0, dryerCenters[0]);
   scene.add(standaloneDryer);
