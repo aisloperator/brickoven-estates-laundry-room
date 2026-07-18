@@ -144,7 +144,7 @@
   function createLogoTexture() {
     var cnv = makeCanvas(512, 128);
     var ctx = cnv.getContext('2d');
-    ctx.fillStyle = '#0d5aa7';
+    ctx.fillStyle = '#2e2e2e';
     ctx.fillRect(0, 0, 512, 128);
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 46px Arial, sans-serif';
@@ -152,7 +152,7 @@
     ctx.textBaseline = 'middle';
     ctx.fillText('SPEED QUEEN', 256, 52);
     ctx.font = '20px Arial, sans-serif';
-    ctx.fillStyle = '#cfe3f7';
+    ctx.fillStyle = '#c9c9c9';
     ctx.fillText('C O M M E R C I A L', 256, 92);
     var tex = new THREE.CanvasTexture(cnv);
     tex.anisotropy = 4;
@@ -242,7 +242,6 @@
   var bodyAlmond = new THREE.MeshStandardMaterial({ color: 0xece6d8, roughness: 0.5, metalness: 0.1 });
   var doorGlass = new THREE.MeshStandardMaterial({ color: 0x14161b, roughness: 0.12, metalness: 0.3 });
   var chrome = new THREE.MeshStandardMaterial({ color: 0xdde1e4, roughness: 0.15, metalness: 0.95 });
-  var panelBlue = new THREE.MeshStandardMaterial({ color: 0x0d5aa7, roughness: 0.5, metalness: 0.2 });
   var knobDark = new THREE.MeshStandardMaterial({ color: 0x22252a, roughness: 0.4, metalness: 0.3 });
   var legMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6 });
 
@@ -331,7 +330,7 @@
       doorPivot.add(glass);
     }
 
-    var panel = new THREE.Mesh(new THREE.BoxGeometry(width * 0.92, panelH, 0.05), panelBlue);
+    var panel = new THREE.Mesh(new THREE.BoxGeometry(width * 0.92, panelH, 0.05), doorWhiteMat);
     panel.position.set(0, height - panelH / 2 - 0.03, depth + 0.02);
     g.add(panel);
 
@@ -417,7 +416,7 @@
     tub.position.set(0, tubY + 0.005, hingeZ + lidDepth / 2);
     g.add(tub);
 
-    var console_ = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, height * 0.14, consoleD), panelBlue);
+    var console_ = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, height * 0.14, consoleD), doorWhiteMat);
     console_.position.set(0, consoleY, consoleZ);
     g.add(console_);
 
