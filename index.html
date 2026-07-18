@@ -2638,14 +2638,22 @@
   // Base (pre-scale) page size — 384x512 to match createPosterTexture's
   // own canvas 1:1, so the page doesn't stretch its texture.
   var pageW0 = 1, pageH0 = pageW0 * (512 / 384);
+  var PAGE_FONT = 'bold 26px Georgia, serif';
   var leftPageMat = new THREE.MeshBasicMaterial({
     map: createPosterTexture('#f0e6c8', '#cbb98f', [
-      { text: 'A', y: 266, color: '#2a2216', font: 'bold 260px Georgia, serif' }
+      { text: 'Books in the laundry', y: 164, color: '#2a2216', font: PAGE_FONT },
+      { text: "room's free corner", y: 210, color: '#2a2216', font: PAGE_FONT },
+      { text: 'are free. You can', y: 256, color: '#2a2216', font: PAGE_FONT },
+      { text: 'also donate books', y: 302, color: '#2a2216', font: PAGE_FONT },
+      { text: 'here.', y: 348, color: '#2a2216', font: PAGE_FONT }
     ])
   });
   var rightPageMat = new THREE.MeshBasicMaterial({
     map: createPosterTexture('#f0e6c8', '#cbb98f', [
-      { text: 'BOOK', y: 266, color: '#2a2216', font: 'bold 88px Georgia, serif' }
+      { text: 'The Cambridge Public', y: 187, color: '#2a2216', font: PAGE_FONT },
+      { text: 'Library is a great', y: 233, color: '#2a2216', font: PAGE_FONT },
+      { text: 'resource, within', y: 279, color: '#2a2216', font: PAGE_FONT },
+      { text: 'walking distance.', y: 325, color: '#2a2216', font: PAGE_FONT }
     ])
   });
 
