@@ -171,12 +171,13 @@
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#c81e1e';
     ctx.font = 'bold 32px Arial, sans-serif';
-    ctx.fillText("Please don't use", 192, 165);
-    ctx.fillText('dryer fabric sheets,', 192, 210);
-    ctx.fillText('wool balls, etc.', 192, 255);
+    ctx.fillText("Please don't use", 192, 150);
+    ctx.fillText('dryer fabric sheets,', 192, 195);
+    ctx.fillText('wool balls, etc.', 192, 240);
+    ctx.fillText('in the dryers', 192, 285);
     ctx.font = '22px Arial, sans-serif';
     ctx.fillStyle = '#5a5650';
-    ctx.fillText('They make some neighbors sick', 192, 340);
+    ctx.fillText('They make some neighbors sick', 192, 365);
     var tex = new THREE.CanvasTexture(cnv);
     tex.anisotropy = 4;
     tex.encoding = THREE.sRGBEncoding;
