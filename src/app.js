@@ -639,6 +639,22 @@
   poster.position.set(ROOM_W - 0.02, 2.0, dryerCenters[0] - 0.3048);
   scene.add(poster);
 
+  // 3 more posters (same design for now — swap createPosterTexture() per
+  // poster later for different messages) on the back wall above the
+  // washers, evenly distributed between the left edge of washer 1 and the
+  // right edge of washer 5: the span is divided into 3 equal segments and
+  // each poster centered in its own segment. No rotation needed here (the
+  // back wall already faces +Z, same as the washers' own local convention).
+  var washersLeftEdge = washerCenters[0] - washerWidths[0] / 2;
+  var washersRightEdge = washerCenters[washerCenters.length - 1] + washerWidths[washerWidths.length - 1] / 2;
+  var washersSpan = washersRightEdge - washersLeftEdge;
+  var backWallPosterY = (Math.max(flH, tlH) + WALL_H) / 2;
+  for (var pi = 0; pi < 3; pi++) {
+    var backPoster = makePoster(0.9144, 1.2192);
+    backPoster.position.set(washersLeftEdge + washersSpan * (pi + 0.5) / 3, backWallPosterY, 0.02);
+    scene.add(backPoster);
+  }
+
   // ---------- click-to-play dog animation ----------
   // A tiny sequential animator: each step runs for `duration` ms, calling
   // update(t) every frame with t in [0,1], then onEnd() before the next step.

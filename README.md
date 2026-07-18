@@ -13,7 +13,7 @@ The scene renders:
 - A room with brick-orange painted walls (procedural brick texture) and a tiled floor, with a doorway gap and trim casing between the two appliance walls
 - A back wall with a row of 5 Speed Queen-style commercial washers: 2 front-loaders and 3 top-loaders
 - A side wall (at a right angle to the washer wall) with 5 Speed Queen-style dryers: 1 standalone front-loader and a 2×2 array of 4 stacked dryers
-- A framed poster on the wall above dryer 6
+- Framed posters: one above dryer 6, and 3 more evenly spaced on the wall above the washers
 
 Each machine has a number on its control panel — washers 1-5, dryers 6-10.
 
