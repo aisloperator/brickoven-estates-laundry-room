@@ -1981,6 +1981,29 @@
     scene.add(stack);
   });
 
+  // A blue recycling bin, tucked in the corner where the back wall meets
+  // the right wall (dryerCenters[0]'s z-range starts around 1.0, so the
+  // open floor between there and the actual wall corner at z=0 has room
+  // for it), sitting at a careless angle rather than perfectly square.
+  function createRecyclingBin() {
+    var g = new THREE.Group();
+    var binMat = new THREE.MeshStandardMaterial({ color: 0x1a5fb4, roughness: 0.55 });
+    var rimMat = new THREE.MeshStandardMaterial({ color: 0x0d3f80, roughness: 0.5 });
+    var w = 0.4, h = 0.5, d = 0.3;
+    var body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), binMat);
+    body.position.set(0, h / 2, 0);
+    g.add(body);
+    var rim = new THREE.Mesh(new THREE.BoxGeometry(w + 0.03, 0.04, d + 0.03), rimMat);
+    rim.position.set(0, h + 0.02, 0);
+    g.add(rim);
+    addShadowFlags(g);
+    return g;
+  }
+  var recyclingBin = createRecyclingBin();
+  recyclingBin.rotation.y = 0.4;
+  recyclingBin.position.set(ROOM_W - 0.32, 0, 0.45);
+  scene.add(recyclingBin);
+
   // ---------- click-to-play dog animation ----------
   // A tiny sequential animator: each step runs for `duration` ms, calling
   // update(t) every frame with t in [0,1], then onEnd() before the next step.
