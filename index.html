@@ -2038,16 +2038,26 @@
   function createRecyclingBin() {
     var g = new THREE.Group();
     var binMat = new THREE.MeshStandardMaterial({ color: 0x1450d0, roughness: 0.4 });
-    var bw = 0.5, bd = 0.38, h = 0.32, taper = 1.12;
-    var body = new THREE.Mesh(makeTaperedBoxGeometry(bw, bd, bw * taper, bd * taper, h), binMat);
+    // Named dimensions are the top (mouth) footprint; the bottom is a bit
+    // smaller since the sides slant in slightly toward the base.
+    var tw = 2.5 * FOOT, td = 1.5 * FOOT, h = 1 * FOOT, shrink = 0.88;
+    var bw = tw * shrink, bd = td * shrink;
+    var body = new THREE.Mesh(makeTaperedBoxGeometry(bw, bd, tw, td, h), binMat);
     g.add(body);
 
+    // The logo sits high on the -Z face, where the slanted side is closer
+    // to its top (tw/td) than bottom (bw/bd) width/depth — interpolate
+    // both by the same height fraction so the decal hugs the sloped face.
+    var logoHeightFrac = 0.55;
+    var faceDepthAtLogo = bd + (td - bd) * logoHeightFrac;
+    var faceWidthAtLogo = bw + (tw - bw) * logoHeightFrac;
     var logoMat = new THREE.MeshBasicMaterial({ map: createRecycleLogoTexture(), transparent: true });
-    var logo = new THREE.Mesh(new THREE.PlaneGeometry(bw * 0.55, bw * 0.55), logoMat);
+    var logoSize = Math.min(faceWidthAtLogo, h) * 0.55;
+    var logo = new THREE.Mesh(new THREE.PlaneGeometry(logoSize, logoSize), logoMat);
     // Default plane normal is +Z, which would face into the bin from this
     // -Z-facing spot — flip it so the logo actually faces outward.
     logo.rotation.y = Math.PI;
-    logo.position.set(0, h * 0.55, -bd / 2 - 0.005);
+    logo.position.set(0, h * logoHeightFrac, -faceDepthAtLogo / 2 - 0.005);
     g.add(logo);
 
     addShadowFlags(g);
@@ -2055,7 +2065,10 @@
   }
   var recyclingBin = createRecyclingBin();
   recyclingBin.rotation.y = 0.4;
-  recyclingBin.position.set(ROOM_W - 0.32, 0, 0.45);
+  // Now that the bin is sized in real feet (2.5ft wide), it needs to sit
+  // further from the right wall than the old, smaller box did or its
+  // rotated footprint clips through it.
+  recyclingBin.position.set(ROOM_W - 0.5, 0, 0.45);
   scene.add(recyclingBin);
 
   // ---------- click-to-play dog animation ----------
