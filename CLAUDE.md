@@ -50,9 +50,8 @@ Clicking (or tapping) any washer/dryer plays a scripted animation, built as an o
 ## Workflow
 
 1. Edit `src/app.js` (or `src/shell-head.html` for DOM/CSS changes).
-2. **Immediately before every commit** (not before building/testing — right before `git commit`, so the timestamp reflects the actual commit time as closely as possible): update the build timestamp in the `#title` link's `<span>` in `src/shell-head.html` — `AI Sloperator - ` followed by the current UTC time in ISO 8601 Zulu form (`date -u +"%Y-%m-%dT%H:%M:%SZ"`). This is the on-page version indicator; it must always reflect *this* commit, not a stale one from earlier in the session.
-3. Run `./build.sh` to regenerate `index.html` (do this *after* the timestamp update in step 2, so the built file has the correct one).
-4. Open `index.html` in a browser to check the change (no server needed).
-5. Commit both the `src/`/`vendor/` changes and the regenerated `index.html` together.
+2. Run `./build.sh` to regenerate `index.html`.
+3. Open `index.html` in a browser to check the change (no server needed).
+4. Commit both the `src/`/`vendor/` changes and the regenerated `index.html` together.
 
-The top-left title (`#title`) is a link to https://www.aisloperator.com/ — the whole block (both lines) is clickable, not just the top line. If you change the link target or the title text, keep `#title`'s CSS overrides for `:link`/`:visited`/`:hover`/`:active` (color/text-decoration) in `shell-head.html` — without them the browser's default link styling (blue, underlined, purple once visited) would show through.
+The top-left title (`#title`) is a link to https://www.aisloperator.com/ — the whole block (both lines, "Brickoven Estates Laundry Room" / "AI Sloperator") is clickable, not just the top line. If you change the link target or the title text, keep `#title`'s CSS overrides for `:link`/`:visited`/`:hover`/`:active` (color/text-decoration) in `shell-head.html` — without them the browser's default link styling (blue, underlined, purple once visited) would show through. The second line no longer carries a build timestamp (it did briefly — removed).
