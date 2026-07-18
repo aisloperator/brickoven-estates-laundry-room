@@ -328,8 +328,10 @@
       doorPanel.position.set(doorHalfW, 0, 0);
       doorPivot.add(doorPanel);
     } else {
-      var rim = new THREE.Mesh(new THREE.CylinderGeometry(doorR + 0.035, doorR + 0.035, 0.03, 28), chrome);
-      rim.rotation.x = Math.PI / 2;
+      // A ring (not a solid disc) — a filled disc here would sit as an
+      // opaque backing directly behind the whole glass pane, defeating its
+      // transparency regardless of the glass material's own opacity.
+      var rim = new THREE.Mesh(new THREE.RingGeometry(doorR, doorR + 0.035, 28), chrome);
       rim.position.set(doorR, 0, 0);
       doorPivot.add(rim);
 
