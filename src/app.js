@@ -330,8 +330,17 @@
     } else {
       // A ring (not a solid disc) — a filled disc here would sit as an
       // opaque backing directly behind the whole glass pane, defeating its
-      // transparency regardless of the glass material's own opacity.
-      var rim = new THREE.Mesh(new THREE.RingGeometry(doorR, doorR + 0.035, 28), chrome);
+      // transparency regardless of the glass material's own opacity. Given
+      // real depth (extruded, like the rect door panel elsewhere) rather
+      // than flat, so it reads as a 3D bezel.
+      var rimAnnulus = new THREE.Shape();
+      rimAnnulus.absarc(0, 0, doorR + 0.035, 0, Math.PI * 2, false);
+      var rimHole = new THREE.Path();
+      rimHole.absarc(0, 0, doorR, 0, Math.PI * 2, true);
+      rimAnnulus.holes.push(rimHole);
+      var rimThickness = 0.025;
+      var rimGeo = new THREE.ExtrudeGeometry(rimAnnulus, { depth: rimThickness, bevelEnabled: false, curveSegments: 28 });
+      var rim = new THREE.Mesh(rimGeo, chrome);
       rim.position.set(doorR, 0, 0);
       doorPivot.add(rim);
 
