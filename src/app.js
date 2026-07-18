@@ -1486,8 +1486,8 @@
   // reads as screen-filling regardless of how the orbit camera happens to
   // be aimed, and its final fill scale is derived from the camera's
   // actual fov/aspect at open() time rather than a fixed number.
-  var bookCoverMat = new THREE.MeshBasicMaterial({ color: 0x3a3a8a });
-  var bookSpineMat = new THREE.MeshBasicMaterial({ color: 0x24243f });
+  var bookCoverMat = new THREE.MeshBasicMaterial({ color: 0x2e5fa3 });
+  var bookSpineMat = new THREE.MeshBasicMaterial({ color: 0x1a3a66 });
 
   // Base (pre-scale) page size — 384x512 to match createPosterTexture's
   // own canvas 1:1, so the page doesn't stretch its texture.
@@ -1520,9 +1520,16 @@
   // Each page is offset half a page-width away from its own hinge pivot,
   // so rotating the pivot swings the whole page like a door — same
   // convention as the appliance door/lid hinges elsewhere in this file.
+  // A red cover plane sits directly behind each page — slightly larger,
+  // so it peeks out as a border — riding the same pivot so it opens and
+  // closes together with its page instead of being a separate hinge.
+  var coverW = pageW0 * 1.1, coverH = pageH0 * 1.08;
   var leftPivot = new THREE.Group();
   leftPivot.position.x = -spineThickness / 2;
   pagesGroup.add(leftPivot);
+  var leftCover = new THREE.Mesh(new THREE.PlaneGeometry(coverW, coverH), bookCoverMat);
+  leftCover.position.set(-pageW0 / 2, 0, -0.01);
+  leftPivot.add(leftCover);
   var leftPage = new THREE.Mesh(new THREE.PlaneGeometry(pageW0, pageH0), leftPageMat);
   leftPage.position.x = -pageW0 / 2;
   leftPivot.add(leftPage);
@@ -1530,6 +1537,9 @@
   var rightPivot = new THREE.Group();
   rightPivot.position.x = spineThickness / 2;
   pagesGroup.add(rightPivot);
+  var rightCover = new THREE.Mesh(new THREE.PlaneGeometry(coverW, coverH), bookCoverMat);
+  rightCover.position.set(pageW0 / 2, 0, -0.01);
+  rightPivot.add(rightCover);
   var rightPage = new THREE.Mesh(new THREE.PlaneGeometry(pageW0, pageH0), rightPageMat);
   rightPage.position.x = pageW0 / 2;
   rightPivot.add(rightPage);
