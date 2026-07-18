@@ -595,36 +595,6 @@
     return a + d * t;
   }
 
-  // orient 'z' = cones point forward (mouth breath), 'up' = cones point up (ground fire).
-  function buildFlameCluster(orient, scaleMul) {
-    scaleMul = scaleMul || 1;
-    // Normal (non-additive) blending so the flame reads as solid orange/red
-    // instead of adding onto the bright background and washing out toward
-    // white. Explicit renderOrder keeps the orange core stably drawn on top
-    // of the red outer cone regardless of camera angle.
-    var specs = [
-      { r: 0.085 * scaleMul, h: 0.66 * scaleMul, color: 0xd22600, opacity: 0.92, renderOrder: 0 },
-      { r: 0.05 * scaleMul, h: 0.42 * scaleMul, color: 0xff7a00, opacity: 0.95, renderOrder: 1 }
-    ];
-    var group = new THREE.Group();
-    var cones = specs.map(function (spec) {
-      var mat = new THREE.MeshBasicMaterial({
-        color: spec.color, transparent: true, opacity: spec.opacity, depthWrite: false
-      });
-      var cone = new THREE.Mesh(new THREE.ConeGeometry(spec.r, spec.h, 10), mat);
-      cone.renderOrder = spec.renderOrder;
-      if (orient === 'z') {
-        cone.rotation.x = Math.PI / 2;
-        cone.position.z = spec.h / 2;
-      } else {
-        cone.position.y = spec.h / 2;
-      }
-      group.add(cone);
-      return cone;
-    });
-    return { group: group, cones: cones };
-  }
-
   // 8 overlapping upward cones clustered around a center point, each with
   // its own base height/phase so they flicker independently — reads as a
   // small licking fire rather than one uniform cone shape. Offsets are laid
@@ -649,6 +619,44 @@
       cone.renderOrder = i;
       cone.userData.baseX = offX;
       cone.userData.baseZ = offZ;
+      cone.userData.baseHeight = h;
+      cone.userData.phase = Math.random() * Math.PI * 2;
+      group.add(cone);
+      cones.push(cone);
+    }
+    return { group: group, cones: cones };
+  }
+
+  // Like buildFlameTongues, but for a fire *breath* rather than a ground
+  // fire: all cones share one base point (the mouth) instead of being
+  // offset around a ring, each angled outward at a random angle from local
+  // +Z (forward) so they spread like a spray instead of all pointing the
+  // same direction from the same spot.
+  function buildFlameSpray(count, scaleMul) {
+    scaleMul = scaleMul || 1;
+    var colors = [0xd22600, 0xff7a00];
+    var maxSpread = 0.5; // radians of deviation from straight-ahead
+    var group = new THREE.Group();
+    var cones = [];
+    for (var i = 0; i < count; i++) {
+      var theta = Math.random() * maxSpread;
+      var phi = Math.random() * Math.PI * 2;
+      var dir = new THREE.Vector3(
+        Math.sin(theta) * Math.cos(phi),
+        Math.sin(theta) * Math.sin(phi),
+        Math.cos(theta)
+      );
+      var r = (0.045 + Math.random() * 0.02) * scaleMul;
+      var h = (0.3 + Math.random() * 0.22) * scaleMul;
+      var mat = new THREE.MeshBasicMaterial({ color: colors[i % 2], transparent: true, opacity: 0.88, depthWrite: false });
+      var cone = new THREE.Mesh(new THREE.ConeGeometry(r, h, 8), mat);
+      // ConeGeometry's local axis is +Y; align that with the random spray
+      // direction, then push it out along that same direction so the
+      // cone's base (not its center) sits at the shared origin.
+      cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+      cone.position.copy(dir).multiplyScalar(h / 2);
+      cone.renderOrder = i;
+      cone.userData.dir = dir;
       cone.userData.baseHeight = h;
       cone.userData.phase = Math.random() * Math.PI * 2;
       group.add(cone);
@@ -697,8 +705,8 @@
     nose.position.set(0, headH * 0.03, headD + 0.09);
     neckPivot.add(nose);
 
-    // Fire-breath cluster, hidden until the incineration step.
-    var mouthFire = buildFlameCluster('z');
+    // Fire-breath spray, hidden until the fire-breathing step.
+    var mouthFire = buildFlameSpray(7);
     var mouthFireGroup = mouthFire.group;
     mouthFireGroup.position.set(0, headH * 0.02, headD + 0.09);
     neckPivot.add(mouthFireGroup);
@@ -1032,10 +1040,18 @@
           dog.mouthFireGroup.visible = true;
           dog.neckPivot.rotation.x = 0.35;
         },
-        update: function () {
+        update: function (t) {
           dog.mouthFireGroup.children.forEach(function (cone) {
-            var j = 0.85 + Math.random() * 0.3;
-            cone.scale.set(j, j, 0.9 + Math.random() * 0.3);
+            // Same flicker approach as the ground fire's tongues, but each
+            // cone re-centers along its own sprayed-out direction (not
+            // straight up) so its base stays anchored at the mouth.
+            var wob = 0.7 + 0.5 * Math.abs(Math.sin(t * 16 + cone.userData.phase));
+            var h = cone.userData.baseHeight * wob;
+            cone.scale.y = wob;
+            cone.position.copy(cone.userData.dir).multiplyScalar(h / 2);
+            var jxz = 0.9 + Math.random() * 0.2;
+            cone.scale.x = jxz;
+            cone.scale.z = jxz;
           });
         },
         onEnd: function () {
