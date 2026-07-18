@@ -14,6 +14,8 @@ The scene renders:
 - A back wall with a row of 5 Speed Queen-style commercial washers: 2 front-loaders and 3 top-loaders
 - A side wall (at a right angle to the washer wall) with 5 Speed Queen-style dryers: 1 standalone front-loader and a 2×2 array of 4 stacked dryers
 
+Each machine has a number on its control panel — washers 1-5, dryers 6-10.
+
 Click (or tap) any washer or dryer: a dog walks in through the doorway, opens it, pulls the laundry into its mouth and shakes it, carries it to the middle of the room and spits it out, pees on it, then breathes fire on it until it burns to nothing, before heading back out.
 
 ## Viewing it

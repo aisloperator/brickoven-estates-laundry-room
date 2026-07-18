@@ -1280,7 +1280,9 @@
     return tex;
   }
 
-  function createLogoTexture() {
+  // Each machine gets its own texture (not a shared one) since the label
+  // — its identifying number — differs per machine.
+  function createLogoTexture(label) {
     var cnv = makeCanvas(512, 128);
     var ctx = cnv.getContext('2d');
     ctx.fillStyle = '#2e2e2e';
@@ -1289,7 +1291,7 @@
     ctx.font = 'bold 46px Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('SPEED QUEEN', 256, 52);
+    ctx.fillText(label, 256, 52);
     ctx.font = '20px Arial, sans-serif';
     ctx.fillStyle = '#c9c9c9';
     ctx.fillText('C O M M E R C I A L', 256, 92);
@@ -1302,7 +1304,6 @@
   var brickTex = createBrickTexture(0xb5522b, ROOM_W / 1.4, WALL_H / 1.4);
   var brickTexSide = createBrickTexture(0xb5522b, ROOM_D / 1.4, WALL_H / 1.4);
   var floorTex = createFloorTexture();
-  var logoTex = createLogoTexture();
 
   var wallMatBack = new THREE.MeshStandardMaterial({ map: brickTex, roughness: 0.92, metalness: 0.02 });
   var wallMatSide = new THREE.MeshStandardMaterial({ map: brickTexSide, roughness: 0.92, metalness: 0.02 });
@@ -1395,9 +1396,9 @@
     });
   }
 
-  function decalPlane(w, h) {
+  function decalPlane(w, h, label) {
     var geo = new THREE.PlaneGeometry(w, h);
-    var mat = new THREE.MeshStandardMaterial({ map: logoTex, roughness: 0.5, metalness: 0.1 });
+    var mat = new THREE.MeshStandardMaterial({ map: createLogoTexture(label), roughness: 0.5, metalness: 0.1 });
     return new THREE.Mesh(geo, mat);
   }
 
@@ -1424,7 +1425,7 @@
 
   // Local convention: appliance footprint centered on X, back face at Z=0, front face at Z=depth, base at Y=0.
   // doorStyle: 'round' (default, chrome-rimmed glass circle) or 'rect' (white rounded-rectangle panel).
-  function makeFrontLoad(width, height, depth, bodyMat, doorStyle, extraPanelH) {
+  function makeFrontLoad(width, height, depth, bodyMat, doorStyle, extraPanelH, machineNumber, label) {
     var g = new THREE.Group();
 
     var cabinet = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), bodyMat);
@@ -1478,7 +1479,7 @@
     panel.position.set(0, height - panelH / 2 - 0.03, depth + 0.02);
     g.add(panel);
 
-    var decal = decalPlane(width * 0.8, panelH * 0.7);
+    var decal = decalPlane(width * 0.8, panelH * 0.7, label);
     decal.position.set(0, height - panelH / 2 - 0.03, depth + 0.05);
     g.add(decal);
 
@@ -1506,12 +1507,14 @@
     g.userData.doorOpenAngle = -1.9;
     g.userData.doorOpening = doorOpening;
     g.userData.standMarker = standMarker;
+    g.userData.machineNumber = machineNumber;
+    g.userData.machineLabel = label;
 
     addShadowFlags(g);
     return g;
   }
 
-  function makeTopLoad(width, height, depth, bodyMat) {
+  function makeTopLoad(width, height, depth, bodyMat, machineNumber, label) {
     var g = new THREE.Group();
     var tubY = height * 0.86;
     var lidH = height * 0.05;
@@ -1567,7 +1570,7 @@
     console_.position.set(0, consoleY, consoleZ);
     g.add(console_);
 
-    var decal = decalPlane(width * 0.75, height * 0.1);
+    var decal = decalPlane(width * 0.75, height * 0.1, label);
     decal.position.set(0, consoleY, consoleZ + 0.045);
     g.add(decal);
 
@@ -1605,17 +1608,19 @@
     g.userData.doorOpenAngle = -Math.PI / 2;
     g.userData.doorOpening = doorOpening;
     g.userData.standMarker = standMarker;
+    g.userData.machineNumber = machineNumber;
+    g.userData.machineLabel = label;
 
     addShadowFlags(g);
     return g;
   }
 
-  function makeStackedDryerColumn(width, depth) {
+  function makeStackedDryerColumn(width, depth, topNumber, topLabel, bottomNumber, bottomLabel) {
     var g = new THREE.Group();
     var h1 = 0.98, h2 = 0.95;
-    var bottom = makeFrontLoad(width, h1, depth, bodyWhite, 'rect');
+    var bottom = makeFrontLoad(width, h1, depth, bodyWhite, 'rect', undefined, bottomNumber, bottomLabel);
     g.add(bottom);
-    var top = makeFrontLoad(width, h2, depth, bodyWhite, 'rect');
+    var top = makeFrontLoad(width, h2, depth, bodyWhite, 'rect', undefined, topNumber, topLabel);
     top.position.y = h1 + 0.03;
     g.add(top);
     var seam = new THREE.Mesh(new THREE.BoxGeometry(width + 0.01, 0.03, depth + 0.01), legMat);
@@ -1649,12 +1654,17 @@
   var washerWidths = [flW, flW, tlW, tlW, tlW];
   var washerCenters = layoutRow(washerWidths, 0.35, doorGapStart - 0.25, 0.16);
 
+  // Machine numbers: washers 1-5 left to right, dryer 6 (standalone, nearest
+  // the doorway), then the 2x2 stacked array 7-10 (top/bottom of the first
+  // stacked column, then top/bottom of the second).
   for (var wi = 0; wi < washerWidths.length; wi++) {
     var unit;
+    var washerNumber = wi + 1;
+    var washerLabel = 'WASHER ' + washerNumber;
     if (wi < 2) {
-      unit = makeFrontLoad(flW, flH, flD, bodyWhite, undefined, FOOT);
+      unit = makeFrontLoad(flW, flH, flD, bodyWhite, undefined, FOOT, washerNumber, washerLabel);
     } else {
-      unit = makeTopLoad(tlW, tlH, tlD, bodyAlmond);
+      unit = makeTopLoad(tlW, tlH, tlD, bodyAlmond, washerNumber, washerLabel);
     }
     unit.position.set(washerCenters[wi], 0, WALL_T);
     scene.add(unit);
@@ -1666,14 +1676,16 @@
   var dryerWidths = [dfW, dfW, dfW]; // standalone, stack col 1, stack col 2
   var dryerCenters = layoutRow(dryerWidths, 0.35, ROOM_D - 0.35, 0.22);
 
-  var standaloneDryer = makeFrontLoad(dfW, 1.0, dfD, bodyWhite, 'rect');
+  var standaloneDryer = makeFrontLoad(dfW, 1.0, dfD, bodyWhite, 'rect', undefined, 6, 'DRYER 6');
   standaloneDryer.rotation.y = -Math.PI / 2;
   standaloneDryer.position.set(ROOM_W - WALL_T, 0, dryerCenters[0]);
   scene.add(standaloneDryer);
   machines.push(standaloneDryer);
 
   [1, 2].forEach(function (idx) {
-    var col = makeStackedDryerColumn(dfW, dfD);
+    var topNumber = 5 + idx * 2;
+    var bottomNumber = topNumber + 1;
+    var col = makeStackedDryerColumn(dfW, dfD, topNumber, 'DRYER ' + topNumber, bottomNumber, 'DRYER ' + bottomNumber);
     col.rotation.y = -Math.PI / 2;
     col.position.set(ROOM_W - WALL_T, 0, dryerCenters[idx]);
     scene.add(col);
