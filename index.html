@@ -1380,7 +1380,12 @@
   var bodyWhite = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, roughness: 0.45, metalness: 0.15 });
   var bodyAlmond = new THREE.MeshStandardMaterial({ color: 0xece6d8, roughness: 0.5, metalness: 0.1 });
   var doorGlass = new THREE.MeshStandardMaterial({ color: 0x14161b, roughness: 0.12, metalness: 0.3 });
-  var chrome = new THREE.MeshStandardMaterial({ color: 0xdde1e4, roughness: 0.15, metalness: 0.95 });
+  // Moderate (not near-1) metalness: this scene has no environment map, so a
+  // near-fully-metallic material has almost no diffuse reflectance and reads
+  // as black except for a single direct-light highlight. This blend keeps a
+  // bright, mostly-uniform silver base color (from the diffuse term) plus a
+  // tight specular glint (low roughness), without relying on reflections.
+  var chrome = new THREE.MeshStandardMaterial({ color: 0xe2e5e7, roughness: 0.28, metalness: 0.45 });
   var knobDark = new THREE.MeshStandardMaterial({ color: 0x22252a, roughness: 0.4, metalness: 0.3 });
   var legMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6 });
 
