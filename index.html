@@ -89,7 +89,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T05:33:34Z</span></a>
+<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T05:50:27Z</span></a>
 <div id="hint">Drag to orbit &middot; scroll or pinch to zoom &middot; right-drag or two-finger drag to pan &middot; click a machine to see what happens</div>
 <div id="fallback"><div>Your browser could not start WebGL, which this 3D room preview requires.<br>Please try the latest version of Chrome, Firefox, or Safari.</div></div>
 <script>
@@ -1908,7 +1908,9 @@
   // rather than front-and-center.
   var bookPageMat = new THREE.MeshStandardMaterial({ color: 0xf0e6c8, roughness: 0.85 });
 
-  function createBookPile(count) {
+  function createBookPile(count, numCols, maxRadius) {
+    numCols = numCols || 6;
+    maxRadius = maxRadius === undefined ? 0.28 : maxRadius;
     var g = new THREE.Group();
     var colors = [
       0xb33a3a, 0x2e5fa3, 0x2f8f4e, 0xd4a017, 0x6b3fa0, 0x1f8a8a,
@@ -1916,11 +1918,10 @@
     ];
     // A handful of loose "columns" so books pile up in stacks rather than
     // floating independently, like they'd actually settle when dropped.
-    var numCols = 6;
     var cols = [];
     for (var c = 0; c < numCols; c++) {
       var ang = Math.random() * Math.PI * 2;
-      var r = Math.random() * 0.28;
+      var r = Math.random() * maxRadius;
       cols.push({ x: Math.cos(ang) * r, z: Math.sin(ang) * r, h: 0 });
     }
     for (var i = 0; i < count; i++) {
@@ -1956,14 +1957,24 @@
     addShadowFlags(g);
     return g;
   }
-  // On the tile floor, tucked into the front-left corner — within the
-  // room's actual footprint, but away from both appliance walls and from
-  // where the initial camera's attention (and framing) is on the machines,
-  // so it's an easter egg found by orbiting around rather than something
-  // front-and-center.
-  var bookPile = createBookPile(90);
-  bookPile.position.set(0.6, 0, 4.15);
-  scene.add(bookPile);
+  // 4 stacks in the back-right corner (the only corner with two actual
+  // walls — back wall meets right wall here, just past the doorway). One
+  // tight in the corner itself, one a few inches out along the washer wall,
+  // one a few inches out along the dryer wall, and one further along the
+  // dryer wall. Positions are hand-fit against the real dryer footprints
+  // (dryerCenters[0] spans roughly z 1.0-1.72, [1] 1.75-2.47, [2] 2.49-3.21
+  // at this wall) so none of the stacks clip into a dryer cabinet.
+  var cornerStackSpecs = [
+    { x: ROOM_W - 0.35, z: 0.30, count: 23 },  // tight in the corner
+    { x: ROOM_W - 0.81, z: 0.30, count: 23 },  // a few inches along the washer wall
+    { x: ROOM_W - 0.35, z: 0.70, count: 22 },  // a few inches along the dryer wall
+    { x: ROOM_W - 0.35, z: 3.70, count: 22 }   // further along the dryer wall
+  ];
+  cornerStackSpecs.forEach(function (spec) {
+    var stack = createBookPile(spec.count, 3, 0.16);
+    stack.position.set(spec.x, 0, spec.z);
+    scene.add(stack);
+  });
 
   // ---------- click-to-play dog animation ----------
   // A tiny sequential animator: each step runs for `duration` ms, calling
