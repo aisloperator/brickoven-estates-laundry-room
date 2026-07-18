@@ -89,7 +89,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T05:50:27Z</span></a>
+<a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator - 2026-07-18T05:53:34Z</span></a>
 <div id="hint">Drag to orbit &middot; scroll or pinch to zoom &middot; right-drag or two-finger drag to pan &middot; click a machine to see what happens</div>
 <div id="fallback"><div>Your browser could not start WebGL, which this 3D room preview requires.<br>Please try the latest version of Chrome, Firefox, or Safari.</div></div>
 <script>
@@ -1957,18 +1957,19 @@
     addShadowFlags(g);
     return g;
   }
-  // 4 stacks in the back-right corner (the only corner with two actual
-  // walls — back wall meets right wall here, just past the doorway). One
-  // tight in the corner itself, one a few inches out along the washer wall,
-  // one a few inches out along the dryer wall, and one further along the
-  // dryer wall. Positions are hand-fit against the real dryer footprints
-  // (dryerCenters[0] spans roughly z 1.0-1.72, [1] 1.75-2.47, [2] 2.49-3.21
-  // at this wall) so none of the stacks clip into a dryer cabinet.
+  // 4 stacks in the front-left corner (the open corner where x=0 meets
+  // z=ROOM_D — no wall geometry there, but it's the corner the books were
+  // already in). One tight in the corner itself, one a few inches out along
+  // the x=0 edge, one a few inches out along the z=ROOM_D edge (the edge
+  // that runs parallel to, and is the room's opposite side from, the
+  // washer wall), and one further along that same z=ROOM_D edge. This
+  // whole area is well clear of every appliance regardless of x, since no
+  // machine's footprint extends anywhere near z=ROOM_D.
   var cornerStackSpecs = [
-    { x: ROOM_W - 0.35, z: 0.30, count: 23 },  // tight in the corner
-    { x: ROOM_W - 0.81, z: 0.30, count: 23 },  // a few inches along the washer wall
-    { x: ROOM_W - 0.35, z: 0.70, count: 22 },  // a few inches along the dryer wall
-    { x: ROOM_W - 0.35, z: 3.70, count: 22 }   // further along the dryer wall
+    { x: 0.35, z: 4.25, count: 23 },  // tight in the corner
+    { x: 0.35, z: 3.59, count: 23 },  // a few inches along the x=0 edge
+    { x: 1.01, z: 4.25, count: 22 },  // a few inches along the far (z=ROOM_D) edge
+    { x: 2.00, z: 4.25, count: 22 }   // further along that same far edge
   ];
   cornerStackSpecs.forEach(function (spec) {
     var stack = createBookPile(spec.count, 3, 0.16);
