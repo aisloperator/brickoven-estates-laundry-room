@@ -570,10 +570,15 @@
   // Machine numbers: washers 1-5 left to right, dryer 6 (standalone, nearest
   // the doorway), then the 2x2 stacked array 7-10 (top/bottom of the first
   // stacked column, then top/bottom of the second).
+  // Footprints (XZ bounding boxes), used later so the dog's walk can check
+  // whether a direct diagonal path is actually clear of every washer before
+  // falling back to a safer routed one.
+  var washerFootprints = [];
   for (var wi = 0; wi < washerWidths.length; wi++) {
     var unit;
     var washerNumber = wi + 1;
     var washerLabel = 'WASHER ' + washerNumber;
+    var thisWasherDepth = wi < 2 ? flD : tlD;
     if (wi < 2) {
       unit = makeFrontLoad(flW, flH, flD, bodyWhite, undefined, FOOT, washerNumber, washerLabel);
     } else {
@@ -582,6 +587,12 @@
     unit.position.set(washerCenters[wi], 0, WALL_T);
     scene.add(unit);
     machines.push(unit);
+    washerFootprints.push({
+      xMin: washerCenters[wi] - washerWidths[wi] / 2,
+      xMax: washerCenters[wi] + washerWidths[wi] / 2,
+      zMin: WALL_T,
+      zMax: WALL_T + thisWasherDepth
+    });
   }
 
   // ---------- place dryers on right wall (facing -X into the room) ----------
@@ -910,6 +921,41 @@
     return { steps: steps, finalHeading: finalHeading };
   }
 
+  // Segment (p1->p2) vs axis-aligned box, in the XZ plane (slab method).
+  function segmentIntersectsBox(p1, p2, box) {
+    var lo = 0, hi = 1;
+    function clip(v1, v2, minV, maxV) {
+      var d = v2 - v1;
+      if (Math.abs(d) < 1e-9) return v1 >= minV && v1 <= maxV;
+      var t1 = (minV - v1) / d, t2 = (maxV - v1) / d;
+      if (t1 > t2) { var tmp = t1; t1 = t2; t2 = tmp; }
+      lo = Math.max(lo, t1);
+      hi = Math.min(hi, t2);
+      return lo <= hi;
+    }
+    return clip(p1.x, p2.x, box.xMin, box.xMax) && clip(p1.z, p2.z, box.zMin, box.zMax);
+  }
+
+  function pathClearOfWashers(p1, p2, excludeBox) {
+    for (var i = 0; i < washerFootprints.length; i++) {
+      var box = washerFootprints[i];
+      if (box !== excludeBox && segmentIntersectsBox(p1, p2, box)) return false;
+    }
+    return true;
+  }
+
+  // Prefers a single natural diagonal walk; only falls back to the safer
+  // (but more rectilinear) routed path if the direct one would actually
+  // clip a washer. excludeBox lets the target machine's own footprint be
+  // ignored, since walking up to its standMarker is the point.
+  function planWalk(from, to, speed, excludeBox) {
+    if (pathClearOfWashers(from, to, excludeBox)) {
+      var heading = Math.atan2(to.x - from.x, to.z - from.z);
+      return { steps: [walkStep(from, to, heading, speed)], finalHeading: heading };
+    }
+    return safeBackWallPath(from, to, speed);
+  }
+
   function createLaundryPile() {
     var g = new THREE.Group();
     var colors = [0xd94f4f, 0x3f7cd6, 0xf2f2ef, 0x4fae5c, 0xe0c23c, 0x9a5fc9];
@@ -982,9 +1028,13 @@
     backUpPos.y = 0;
 
     var enterHeading = Math.atan2(doorwayPos.x - outsidePos.x, doorwayPos.z - outsidePos.z);
-    var approachPath = safeBackWallPath(doorwayPos, standPos, 1.6);
+    // The target washer's own footprint doesn't count as an obstacle —
+    // walking up to its standMarker is the point.
+    var targetWasherBox = (machineRoot.userData.machineNumber >= 1 && machineRoot.userData.machineNumber <= 5)
+      ? washerFootprints[machineRoot.userData.machineNumber - 1] : null;
+    var approachPath = planWalk(doorwayPos, standPos, 1.6, targetWasherBox);
     var approachHeading = approachPath.finalHeading;
-    var exitPath = safeBackWallPath(backUpPos, doorwayPos, 1.7);
+    var exitPath = planWalk(backUpPos, doorwayPos, 1.7, targetWasherBox);
     var exitHeadingA = exitPath.finalHeading;
     var exitHeadingB = Math.atan2(outsidePos.x - doorwayPos.x, outsidePos.z - doorwayPos.z);
 
