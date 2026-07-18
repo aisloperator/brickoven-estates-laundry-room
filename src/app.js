@@ -318,8 +318,14 @@
     scene.add(mesh);
     return mesh;
   }
-  trimBox(doorGapStart - 0.04, doorHeight / 2, -WALL_T / 2, 0.08, doorHeight, WALL_T + 0.04);
-  trimBox(doorGapEnd + 0.04, doorHeight / 2, -WALL_T / 2, 0.08, doorHeight, WALL_T + 0.04);
+  // Each post's outer edge overlaps 0.08 into the adjoining wall segment
+  // (for occlusion), but its inner edge used to land exactly on
+  // doorGapStart/doorGapEnd — precisely where that wall segment's own cut
+  // end-cap face already sits. Two coplanar faces (one brick, one trim)
+  // at the same spot z-fight. Nudging the inner edge 0.006 past the gap
+  // boundary, into open air past the wall's edge, resolves the tie.
+  trimBox(doorGapStart - 0.037, doorHeight / 2, -WALL_T / 2, 0.086, doorHeight, WALL_T + 0.04);
+  trimBox(doorGapEnd + 0.037, doorHeight / 2, -WALL_T / 2, 0.086, doorHeight, WALL_T + 0.04);
   trimBox((doorGapStart + doorGapEnd) / 2, doorHeight + 0.04, -WALL_T / 2, (doorGapEnd - doorGapStart) + 0.16, 0.08, WALL_T + 0.04);
 
   // Right wall runs along Z at X = ROOM_W
