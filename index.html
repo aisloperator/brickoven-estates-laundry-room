@@ -1488,12 +1488,16 @@
       doorPivot.add(glass);
     }
 
-    var panel = new THREE.Mesh(new THREE.BoxGeometry(width * 0.92, panelH, 0.025), doorWhiteMat);
-    panel.position.set(0, height - panelH / 2 - 0.03, depth + 0.02);
+    var panelThickness = 0.025;
+    var panelZ = depth + 0.02;
+    var panel = new THREE.Mesh(new THREE.BoxGeometry(width * 0.92, panelH, panelThickness), doorWhiteMat);
+    panel.position.set(0, height - panelH / 2 - 0.03, panelZ);
     g.add(panel);
 
+    // Sits flush against the panel's own front face, not a fixed offset
+    // from the cabinet, so it tracks panelThickness if that ever changes.
     var decal = decalPlane(width * 0.8, panelH * 0.7, label);
-    decal.position.set(0, height - panelH / 2 - 0.03, depth + 0.05);
+    decal.position.set(0, height - panelH / 2 - 0.03, panelZ + panelThickness / 2 + 0.005);
     g.add(decal);
 
     var legH = 0.08;
