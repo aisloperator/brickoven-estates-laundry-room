@@ -835,21 +835,75 @@
     scene.add(stack);
   });
 
+  // An open (no top/bottom cap) box with different bottom/top footprints,
+  // for slightly slanted sides — a tapered tote shape rather than a plain
+  // rectangular box. Sides only; never seen from directly above or below.
+  function makeTaperedBoxGeometry(bw, bd, tw, td, h) {
+    var hbw = bw / 2, hbd = bd / 2, htw = tw / 2, htd = td / 2;
+    var positions = new Float32Array([
+      -hbw, 0, -hbd, hbw, 0, -hbd, hbw, 0, hbd, -hbw, 0, hbd,
+      -htw, h, -htd, htw, h, -htd, htw, h, htd, -htw, h, htd
+    ]);
+    var indices = [
+      0, 1, 5, 0, 5, 4,
+      1, 2, 6, 1, 6, 5,
+      2, 3, 7, 2, 7, 6,
+      3, 0, 4, 3, 4, 7
+    ];
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  function createRecycleLogoTexture() {
+    var cnv = makeCanvas(256, 256);
+    var ctx = cnv.getContext('2d');
+    ctx.translate(128, 128);
+    ctx.strokeStyle = '#d0d0d0';
+    ctx.fillStyle = '#d0d0d0';
+    ctx.lineWidth = 15;
+    ctx.lineCap = 'round';
+    for (var i = 0; i < 3; i++) {
+      ctx.save();
+      ctx.rotate(i * Math.PI * 2 / 3);
+      ctx.beginPath();
+      ctx.arc(0, 0, 68, -0.35, 1.05);
+      ctx.stroke();
+      var ex = 68 * Math.cos(1.05), ey = 68 * Math.sin(1.05);
+      ctx.beginPath();
+      ctx.moveTo(ex, ey);
+      ctx.lineTo(ex + 20, ey - 5);
+      ctx.lineTo(ex - 3, ey + 18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    var tex = new THREE.CanvasTexture(cnv);
+    tex.anisotropy = 4;
+    return tex;
+  }
+
   // A blue recycling bin, tucked in the corner where the back wall meets
   // the right wall (dryerCenters[0]'s z-range starts around 1.0, so the
   // open floor between there and the actual wall corner at z=0 has room
   // for it), sitting at a careless angle rather than perfectly square.
   function createRecyclingBin() {
     var g = new THREE.Group();
-    var binMat = new THREE.MeshStandardMaterial({ color: 0x1a5fb4, roughness: 0.55 });
-    var rimMat = new THREE.MeshStandardMaterial({ color: 0x0d3f80, roughness: 0.5 });
-    var w = 0.4, h = 0.5, d = 0.3;
-    var body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), binMat);
-    body.position.set(0, h / 2, 0);
+    var binMat = new THREE.MeshStandardMaterial({ color: 0x1450d0, roughness: 0.4 });
+    var bw = 0.5, bd = 0.38, h = 0.32, taper = 1.12;
+    var body = new THREE.Mesh(makeTaperedBoxGeometry(bw, bd, bw * taper, bd * taper, h), binMat);
     g.add(body);
-    var rim = new THREE.Mesh(new THREE.BoxGeometry(w + 0.03, 0.04, d + 0.03), rimMat);
-    rim.position.set(0, h + 0.02, 0);
-    g.add(rim);
+
+    var logoMat = new THREE.MeshBasicMaterial({ map: createRecycleLogoTexture(), transparent: true });
+    var logo = new THREE.Mesh(new THREE.PlaneGeometry(bw * 0.55, bw * 0.55), logoMat);
+    // Default plane normal is +Z, which would face into the bin from this
+    // -Z-facing spot — flip it so the logo actually faces outward.
+    logo.rotation.y = Math.PI;
+    logo.position.set(0, h * 0.55, -bd / 2 - 0.005);
+    g.add(logo);
+
     addShadowFlags(g);
     return g;
   }
