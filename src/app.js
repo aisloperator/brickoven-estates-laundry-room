@@ -241,7 +241,7 @@
   var bodyWhite = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, roughness: 0.45, metalness: 0.15 });
   var bodyAlmond = new THREE.MeshStandardMaterial({ color: 0xece6d8, roughness: 0.5, metalness: 0.1 });
   var doorGlass = new THREE.MeshStandardMaterial({ color: 0x14161b, roughness: 0.12, metalness: 0.3 });
-  var chrome = new THREE.MeshStandardMaterial({ color: 0xc9cdd2, roughness: 0.25, metalness: 0.85 });
+  var chrome = new THREE.MeshStandardMaterial({ color: 0xdde1e4, roughness: 0.15, metalness: 0.95 });
   var panelBlue = new THREE.MeshStandardMaterial({ color: 0x0d5aa7, roughness: 0.5, metalness: 0.2 });
   var knobDark = new THREE.MeshStandardMaterial({ color: 0x22252a, roughness: 0.4, metalness: 0.3 });
   var legMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6 });
