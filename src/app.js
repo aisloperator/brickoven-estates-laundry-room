@@ -506,7 +506,7 @@
 
   // Local convention: appliance footprint centered on X, back face at Z=0, front face at Z=depth, base at Y=0.
   // doorStyle: 'round' (default, chrome-rimmed glass circle) or 'rect' (white rounded-rectangle panel).
-  function makeFrontLoad(width, height, depth, bodyMat, doorStyle, extraPanelH, machineNumber, label) {
+  function makeFrontLoad(width, height, depth, bodyMat, doorStyle, extraPanelH, machineNumber, label, statusY) {
     var g = new THREE.Group();
 
     var cabinet = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), bodyMat);
@@ -593,9 +593,13 @@
 
     // Centered on the door itself (doorY, and x=0 like the door's own
     // center) rather than the panel — this is a front-load washer or dryer,
-    // so "in front of the machine" means in front of its door.
+    // so "in front of the machine" means in front of its door. Callers can
+    // override the height with statusY — used for the 2 front-load washers
+    // so their display sits at the same height as the top-load washers'
+    // (which centers on their own cabinet box, a different formula), rather
+    // than each washer type floating at its own unrelated height.
     var statusW = width * 0.42 * 3 * 0.9, statusH = statusW * (STATUS_CANVAS_H / STATUS_CANVAS_W);
-    var statusMesh = addStatusDisplay(g, machineNumber, 0, doorY, depth + 0.4 * 0.25, statusW, statusH);
+    var statusMesh = addStatusDisplay(g, machineNumber, 0, statusY !== undefined ? statusY : doorY, depth + 0.4 * 0.25, statusW, statusH);
 
     var legH = 0.08;
     [-1, 1].forEach(function (sx) {
@@ -799,13 +803,18 @@
   // whether a direct diagonal path is actually clear of every washer before
   // falling back to a safer routed one.
   var washerFootprints = [];
+  // Matches makeTopLoad's own status-display height (tubY / 2, where
+  // tubY = height * 0.86) so the 2 front-load washers' status display sits
+  // at the same height as the 3 top-load washers', rather than each type
+  // floating at its own door-centered/box-centered height.
+  var topLoadStatusY = tlH * 0.86 / 2;
   for (var wi = 0; wi < washerWidths.length; wi++) {
     var unit;
     var washerNumber = wi + 1;
     var washerLabel = 'WASHER ' + washerNumber;
     var thisWasherDepth = wi < 2 ? flD : tlD;
     if (wi < 2) {
-      unit = makeFrontLoad(flW, flH, flD, applianceWhite, undefined, FOOT, washerNumber, washerLabel);
+      unit = makeFrontLoad(flW, flH, flD, applianceWhite, undefined, FOOT, washerNumber, washerLabel, topLoadStatusY);
     } else {
       unit = makeTopLoad(tlW, tlH, tlD, applianceWhite, washerNumber, washerLabel);
     }
