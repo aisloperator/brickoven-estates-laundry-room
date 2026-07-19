@@ -1493,18 +1493,20 @@
   // own canvas 1:1, so the page doesn't stretch its texture.
   var pageW0 = 1, pageH0 = pageW0 * (512 / 384);
   var PAGE_FONT = 'bold 26px Georgia, serif';
-  // The right page carries two paragraphs' worth of text (roughly twice the
-  // left page's line count), so it uses a smaller font and tighter line
-  // spacing than the left page to still fit within the page height.
+  // The right page carries two paragraphs' worth of text (more lines than
+  // the left page), so it uses a smaller font and tighter line spacing than
+  // the left page to still fit within the page height.
   var PAGE_FONT_SMALL = 'bold 20px Georgia, serif';
   var leftPageMat = new THREE.MeshBasicMaterial({
     map: createPosterTexture('#f0e6c8', '#cbb98f', [
-      { text: 'Books and videos in', y: 141, color: '#2a2216', font: PAGE_FONT },
-      { text: "the laundry room's", y: 187, color: '#2a2216', font: PAGE_FONT },
-      { text: 'bookshelves corner', y: 233, color: '#2a2216', font: PAGE_FONT },
-      { text: 'are free. You can', y: 279, color: '#2a2216', font: PAGE_FONT },
-      { text: 'also leave books', y: 325, color: '#2a2216', font: PAGE_FONT },
-      { text: 'and videos here.', y: 371, color: '#2a2216', font: PAGE_FONT }
+      { text: 'Books and videos in', y: 95, color: '#2a2216', font: PAGE_FONT },
+      { text: "the laundry room's", y: 141, color: '#2a2216', font: PAGE_FONT },
+      { text: 'bookshelves corner', y: 187, color: '#2a2216', font: PAGE_FONT },
+      { text: 'are free. You can', y: 233, color: '#2a2216', font: PAGE_FONT },
+      { text: 'also leave books', y: 279, color: '#2a2216', font: PAGE_FONT },
+      { text: 'and videos here', y: 325, color: '#2a2216', font: PAGE_FONT },
+      { text: 'for neighbors to', y: 371, color: '#2a2216', font: PAGE_FONT },
+      { text: 'take.', y: 417, color: '#2a2216', font: PAGE_FONT }
     ])
   });
   var rightPageMat = new THREE.MeshBasicMaterial({
