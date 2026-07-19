@@ -1621,7 +1621,7 @@
       { text: 'also leave books', y: 279, color: '#2a2216', font: PAGE_FONT },
       { text: 'and videos here', y: 325, color: '#2a2216', font: PAGE_FONT },
       { text: 'for neighbors to', y: 371, color: '#2a2216', font: PAGE_FONT },
-      { text: 'take.', y: 417, color: '#2a2216', font: PAGE_FONT }
+      { text: 'reuse.', y: 417, color: '#2a2216', font: PAGE_FONT }
     ])
   });
   var rightPageMat = new THREE.MeshBasicMaterial({
