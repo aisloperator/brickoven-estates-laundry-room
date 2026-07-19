@@ -442,10 +442,16 @@
     var mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
     var mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
     mesh.position.set(x, y, z);
+    // A floating hologram-style indicator has no business casting a shadow
+    // onto the appliance or floor behind it; addShadowFlags(g), called by
+    // the factories after this, would otherwise flip castShadow back on
+    // since it unconditionally sets it for every mesh in the group — so
+    // callers must re-disable it on the returned mesh *after* that call.
     g.add(mesh);
     statusDisplays[machineNumber] = { ctx: ctx, tex: tex };
     drawStatusCanvas(ctx, machineStatus[machineNumber]);
     tex.needsUpdate = true;
+    return mesh;
   }
 
   function setMachineMinutes(machineNumber, minutes) {
@@ -575,8 +581,11 @@
     decal.position.set(0, height - panelH / 2 - 0.03, panelZ + panelThickness / 2 + 0.005);
     g.add(decal);
 
-    var statusW = width * 0.42, statusH = statusW * (STATUS_CANVAS_H / STATUS_CANVAS_W);
-    addStatusDisplay(g, machineNumber, 0, height * 0.85, depth + 0.4, statusW, statusH);
+    // Centered on the door itself (doorY, and x=0 like the door's own
+    // center) rather than the panel — this is a front-load washer or dryer,
+    // so "in front of the machine" means in front of its door.
+    var statusW = width * 0.42 * 3, statusH = statusW * (STATUS_CANVAS_H / STATUS_CANVAS_W);
+    var statusMesh = addStatusDisplay(g, machineNumber, 0, doorY, depth + 0.4, statusW, statusH);
 
     var legH = 0.08;
     [-1, 1].forEach(function (sx) {
@@ -606,6 +615,7 @@
     g.userData.machineLabel = label;
 
     addShadowFlags(g);
+    statusMesh.castShadow = false;
     return g;
   }
 
@@ -671,8 +681,12 @@
     decal.position.set(0, consoleY, consoleZ + 0.045);
     g.add(decal);
 
-    var statusW = width * 0.42, statusH = statusW * (STATUS_CANVAS_H / STATUS_CANVAS_W);
-    addStatusDisplay(g, machineNumber, 0, height * 0.85, depth + 0.4, statusW, statusH);
+    // Centered on the cabinet box itself (tubY/2), not the console/lid
+    // above it — this is a top-load washer, so "in front of the machine"
+    // means in front of the box, distinct from the front-load convention
+    // (which centers on the door instead).
+    var statusW = width * 0.42 * 3, statusH = statusW * (STATUS_CANVAS_H / STATUS_CANVAS_W);
+    var statusMesh = addStatusDisplay(g, machineNumber, 0, tubY / 2, depth + 0.4, statusW, statusH);
 
     var legH = 0.08;
     [-1, 1].forEach(function (sx) {
@@ -705,6 +719,7 @@
     g.userData.machineLabel = label;
 
     addShadowFlags(g);
+    statusMesh.castShadow = false;
     return g;
   }
 
