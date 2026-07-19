@@ -415,14 +415,15 @@
       ctx.stroke();
     } else {
       ctx.fillStyle = '#ff1a1a';
-      // Gap between the two lines' baselines is 46 (about half the
-      // original 92), and both are shifted so the pair is still centered
-      // vertically in the canvas rather than just shrinking toward the
-      // old number position.
+      // Gap between the two lines' baselines is 69 — halfway between the
+      // original 92 and the 46 that turned out to read as no gap at all
+      // once the big number's own glyph height ate into it — and both are
+      // shifted so the pair is still centered vertically in the canvas
+      // rather than just shrinking toward the old number position.
       ctx.font = 'bold 130px Arial, sans-serif';
-      ctx.fillText(String(minutes), STATUS_CANVAS_W / 2, 161);
+      ctx.fillText(String(minutes), STATUS_CANVAS_W / 2, 150);
       ctx.font = 'bold 34px Arial, sans-serif';
-      ctx.fillText('minutes', STATUS_CANVAS_W / 2, 207);
+      ctx.fillText('minutes', STATUS_CANVAS_W / 2, 219);
     }
   }
 
