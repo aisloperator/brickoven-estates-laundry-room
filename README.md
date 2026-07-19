@@ -21,6 +21,8 @@ Click (or tap) any washer or dryer: a dog walks in through the doorway, opens it
 
 Somewhere in the room is a messy pile of books — click (or tap) any one of them and a book flies in and opens up to fill most of the screen. Click again anywhere to close it.
 
+Each machine also shows a live status floating in front of it: a green checkmark if it's idle, or its remaining run time in red minutes if it's running. Since there's no real status feed yet, click "Random Fake Data" (top-right) to randomize all 10 machines for a demo.
+
 ## Viewing it
 
 Open `index.html` directly in Chrome, Firefox, or Safari — double-click the file or run:

@@ -388,6 +388,86 @@
     return new THREE.Mesh(geo, mat);
   }
 
+  // ---------- machine status display (checkmark / minutes remaining) ----------
+  // Mapping from machine number -> minutes left on its current run, 0 if the
+  // machine isn't running. This is the shape a future real status feed will
+  // populate; until that's wired up, every machine starts at 0 (idle), and
+  // the "Random Fake Data" button (wired up further down, near the render
+  // loop) randomizes it for demonstrating the visualization.
+  var machineStatus = {};
+  for (var initStatusNum = 1; initStatusNum <= 10; initStatusNum++) machineStatus[initStatusNum] = 0;
+
+  var STATUS_CANVAS_W = 256, STATUS_CANVAS_H = 320;
+
+  function drawStatusCanvas(ctx, minutes) {
+    ctx.clearRect(0, 0, STATUS_CANVAS_W, STATUS_CANVAS_H);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    if (minutes <= 0) {
+      ctx.strokeStyle = '#22ff33';
+      ctx.lineWidth = 28;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(56, 168);
+      ctx.lineTo(106, 220);
+      ctx.lineTo(202, 96);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = '#ff1a1a';
+      ctx.font = 'bold 130px Arial, sans-serif';
+      ctx.fillText(String(minutes), STATUS_CANVAS_W / 2, 140);
+      ctx.font = 'bold 34px Arial, sans-serif';
+      ctx.fillText('minutes', STATUS_CANVAS_W / 2, 232);
+    }
+  }
+
+  // One canvas/texture per machine, created once and held onto here so the
+  // "Random Fake Data" button can redraw it and flag needsUpdate in place,
+  // rather than rebuilding geometry on every click.
+  var statusDisplays = {};
+
+  // A floating, double-sided (the room has no ceiling and is open enough to
+  // orbit around behind a machine, unlike the wall-flush decals/posters
+  // which only need to face one way) status plane in front of a machine.
+  // Added in the appliance factories' own local convention (front face at
+  // local Z=depth), so it's positioned once, here, in local space, and
+  // comes along for free with whatever placement/rotation the machine
+  // itself ends up getting.
+  function addStatusDisplay(g, machineNumber, x, y, z, w, h) {
+    var cnv = makeCanvas(STATUS_CANVAS_W, STATUS_CANVAS_H);
+    var ctx = cnv.getContext('2d');
+    var tex = new THREE.CanvasTexture(cnv);
+    tex.encoding = THREE.sRGBEncoding;
+    var mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
+    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+    mesh.position.set(x, y, z);
+    g.add(mesh);
+    statusDisplays[machineNumber] = { ctx: ctx, tex: tex };
+    drawStatusCanvas(ctx, machineStatus[machineNumber]);
+    tex.needsUpdate = true;
+  }
+
+  function setMachineMinutes(machineNumber, minutes) {
+    machineStatus[machineNumber] = minutes;
+    var d = statusDisplays[machineNumber];
+    if (!d) return;
+    drawStatusCanvas(d.ctx, minutes);
+    d.tex.needsUpdate = true;
+  }
+
+  // 0.5 chance a machine reads idle (0 minutes); otherwise a random run
+  // length — washers 1-35 minutes, dryers 0-60 (dryers can independently
+  // land on 0 from this branch too, on top of the shared 0.5 idle chance,
+  // exactly as specified).
+  function randomFakeData() {
+    for (var num = 1; num <= 10; num++) {
+      var isWasher = num <= 5;
+      var minutes = Math.random() < 0.5 ? 0 : (isWasher ? (1 + Math.floor(Math.random() * 35)) : Math.floor(Math.random() * 61));
+      setMachineMinutes(num, minutes);
+    }
+  }
+
   var drumDarkMat = new THREE.MeshStandardMaterial({ color: 0x08090b, roughness: 0.6 });
 
   // A rounded-rectangle outline centered on its own origin, for the flat
@@ -495,6 +575,9 @@
     decal.position.set(0, height - panelH / 2 - 0.03, panelZ + panelThickness / 2 + 0.005);
     g.add(decal);
 
+    var statusW = width * 0.42, statusH = statusW * (STATUS_CANVAS_H / STATUS_CANVAS_W);
+    addStatusDisplay(g, machineNumber, 0, height * 0.85, depth + 0.4, statusW, statusH);
+
     var legH = 0.08;
     [-1, 1].forEach(function (sx) {
       [0.05, depth - 0.05].forEach(function (lz) {
@@ -587,6 +670,9 @@
     var decal = decalPlane(width * 0.75, height * 0.1, label, false, 58);
     decal.position.set(0, consoleY, consoleZ + 0.045);
     g.add(decal);
+
+    var statusW = width * 0.42, statusH = statusW * (STATUS_CANVAS_H / STATUS_CANVAS_W);
+    addStatusDisplay(g, machineNumber, 0, height * 0.85, depth + 0.4, statusW, statusH);
 
     var legH = 0.08;
     [-1, 1].forEach(function (sx) {
@@ -1771,6 +1857,10 @@
   }
   window.addEventListener('resize', resize);
   resize();
+
+  // ---------- "Random Fake Data" button ----------
+  var randomFakeDataBtn = document.getElementById('randomFakeDataBtn');
+  if (randomFakeDataBtn) randomFakeDataBtn.addEventListener('click', randomFakeData);
 
   // ---------- render loop ----------
   function animate() {

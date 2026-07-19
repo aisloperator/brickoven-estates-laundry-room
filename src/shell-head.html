@@ -67,6 +67,25 @@
     z-index: 5;
     transition: opacity 0.8s ease;
   }
+  #randomFakeDataBtn {
+    position: fixed;
+    top: 6px;
+    right: 4px;
+    z-index: 5;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.35);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    cursor: pointer;
+  }
+  #randomFakeDataBtn:hover {
+    background: rgba(0,0,0,0.65);
+  }
   #fallback {
     display: none;
     position: fixed;
@@ -90,5 +109,6 @@
 <body>
 <canvas id="c"></canvas>
 <a id="title" href="https://www.aisloperator.com/">Brickoven Estates Laundry Room<span>AI Sloperator</span></a>
+<button id="randomFakeDataBtn" type="button">Random Fake Data</button>
 <div id="hint">Drag to orbit &middot; scroll or pinch to zoom &middot; right-drag or two-finger drag to pan &middot; click a machine to see what happens</div>
 <div id="fallback"><div>Your browser could not start WebGL, which this 3D room preview requires.<br>Please try the latest version of Chrome, Firefox, or Safari.</div></div>
