@@ -1008,14 +1008,14 @@
     return a + d * t;
   }
 
-  // 8 overlapping upward cones clustered around a center point, each with
+  // 10 overlapping upward cones clustered around a center point, each with
   // its own base height/phase so they flicker independently — reads as a
   // small licking fire rather than one uniform cone shape. Offsets are laid
   // out around a ring (with jitter) rather than hand-placed so the count is
   // just a loop bound.
   function buildFlameTongues(scaleMul) {
     scaleMul = scaleMul || 1;
-    var count = 8;
+    var count = 10;
     var colors = [0xd22600, 0xff7a00, 0xffd400];
     var group = new THREE.Group();
     var cones = [];
