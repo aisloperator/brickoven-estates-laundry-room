@@ -23,7 +23,7 @@ Click (or tap) any washer or dryer: a dog walks in through the doorway, opens it
 
 Somewhere in the room is a messy pile of books — click (or tap) any one of them and a book flies in and opens up to fill most of the screen. Click again anywhere to close it.
 
-Each machine also shows a live status floating in front of it: a green checkmark if it's idle, its remaining run time in red minutes if it's running, or a red X if its status can't be determined. With no `?data=` link (see below), click "Random Fake Data" (top-right) to randomize all 10 machines for a demo.
+Each machine also shows a live status floating in front of it: a green checkmark if it's idle, its remaining run time in red minutes if it's running, or a red X if its status can't be determined. With no `?data=` link (see below), all 10 machines start out with random demo data; click "Random Fake Data" (top-right) any time to re-randomize them.
 
 ### Real status data
 

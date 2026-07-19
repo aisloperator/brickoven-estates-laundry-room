@@ -2016,6 +2016,7 @@
     resolveRealDataUrl(dataParam);
   } else {
     if (randomFakeDataBtn) randomFakeDataBtn.addEventListener('click', randomFakeData);
+    randomFakeData();
   }
 
   // ---------- render loop ----------
