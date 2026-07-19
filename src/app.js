@@ -503,6 +503,94 @@
     }
   }
 
+  // ---------- real machine status data (?data=<url> query param) ----------
+  // If the page's own URL has a ?data=<url> param, <url> is treated as a
+  // CSC Go ("mycscgo.com") QR-code URL — the same kind of URL printed on a
+  // QR sticker on a real CSC Go washer/dryer (https://mycscgo.com/qr/<code>).
+  // CSC Go's site is a pure client-rendered SPA (no server-rendered HTML or
+  // links to parse — the raw page is just an empty <div id="root"> plus JS
+  // bundles), but its underlying REST API is public, unauthenticated, and
+  // CORS-open, so it's called directly in two steps:
+  //   1. GET .../api/v3/machine/qr/<code> resolves the QR code to its one
+  //      machine, whose locationId/roomId identify the whole room. This is
+  //      the "which room is this" step, standing in for the "laundry
+  //      summary" link the room's machines are all listed from.
+  //   2. GET .../api/v3/location/<locationId>/room/<roomId>/machines
+  //      returns every machine in that room — this resolved URL is what
+  //      gets "remembered" as the real data URL, re-fetched on every
+  //      "Update Real Data" press without redoing step 1. Each machine has
+  //      a `stickerNumber` (matches this app's own 1-10 `machineNumber`
+  //      convention directly) and a `timeRemaining` (minutes left, 0 when
+  //      idle) — mirroring `machineStatus` closely enough that mapping one
+  //      onto the other is direct.
+  var CSCGO_HOST = 'mycscgo.com';
+  var realDataUrl = null; // the resolved room-machines URL, once known
+
+  function parseCscGoQrCode(url) {
+    try {
+      var u = new URL(url);
+      if (u.hostname !== CSCGO_HOST) return null;
+      var m = u.pathname.match(/\/qr\/([^/]+)/);
+      return m ? m[1] : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Missing (or malformed) per-machine data is exactly the "can't be
+  // loaded" case the -1/red-X status already exists for, so an unresolved
+  // or failed fetch just leaves every machine at -1 rather than needing a
+  // separate error state.
+  function markAllMachinesUnknown() {
+    for (var num = 1; num <= 10; num++) setMachineMinutes(num, -1);
+  }
+
+  function applyRealMachineList(list) {
+    for (var num = 1; num <= 10; num++) {
+      var found = null;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].stickerNumber === num) { found = list[i]; break; }
+      }
+      var minutes = (found && typeof found.timeRemaining === 'number') ? found.timeRemaining : -1;
+      setMachineMinutes(num, minutes);
+    }
+  }
+
+  function fetchRealMachineList() {
+    fetch(realDataUrl)
+      .then(function (res) { if (!res.ok) throw new Error('bad response'); return res.json(); })
+      .then(function (list) { applyRealMachineList(Array.isArray(list) ? list : []); })
+      .catch(function (err) {
+        console.error('Failed to load real machine data', err);
+        markAllMachinesUnknown();
+      });
+  }
+
+  // Re-fetches the already-resolved room-machines URL; if step 1 (QR ->
+  // room) never succeeded, retries that first instead of doing nothing.
+  function updateRealData() {
+    if (realDataUrl) { fetchRealMachineList(); return; }
+    resolveRealDataUrl(dataParam);
+  }
+
+  function resolveRealDataUrl(dataParamUrl) {
+    var qrCode = parseCscGoQrCode(dataParamUrl);
+    if (!qrCode) { markAllMachinesUnknown(); return; }
+    fetch('https://' + CSCGO_HOST + '/api/v3/machine/qr/' + encodeURIComponent(qrCode))
+      .then(function (res) { if (!res.ok) throw new Error('bad response'); return res.json(); })
+      .then(function (info) {
+        realDataUrl = 'https://' + CSCGO_HOST + '/api/v3/location/' + encodeURIComponent(info.locationId) +
+          '/room/' + encodeURIComponent(info.roomId) + '/machines';
+        fetchRealMachineList();
+      })
+      .catch(function (err) {
+        console.error('Failed to resolve real machine data URL', err);
+        markAllMachinesUnknown();
+      });
+  }
+
+  var dataParam = new URLSearchParams(window.location.search).get('data');
+
   var drumDarkMat = new THREE.MeshStandardMaterial({ color: 0x08090b, roughness: 0.6 });
 
   // A rounded-rectangle outline centered on its own origin, for the flat
@@ -1911,9 +1999,24 @@
   window.addEventListener('resize', resize);
   resize();
 
-  // ---------- "Random Fake Data" button ----------
+  // ---------- "Random Fake Data" / "Update Real Data" buttons ----------
+  // Exactly one of these two is shown, chosen once at load by whether the
+  // page's own URL carries a ?data=<url> param: with no real feed to point
+  // at, "Random Fake Data" demos the visualization; with one, "Random Fake
+  // Data" would just clobber real values, so "Update Real Data" (which
+  // re-fetches instead of randomizing) replaces it.
   var randomFakeDataBtn = document.getElementById('randomFakeDataBtn');
-  if (randomFakeDataBtn) randomFakeDataBtn.addEventListener('click', randomFakeData);
+  var updateRealDataBtn = document.getElementById('updateRealDataBtn');
+  if (dataParam) {
+    if (randomFakeDataBtn) randomFakeDataBtn.style.display = 'none';
+    if (updateRealDataBtn) {
+      updateRealDataBtn.style.display = '';
+      updateRealDataBtn.addEventListener('click', updateRealData);
+    }
+    resolveRealDataUrl(dataParam);
+  } else {
+    if (randomFakeDataBtn) randomFakeDataBtn.addEventListener('click', randomFakeData);
+  }
 
   // ---------- render loop ----------
   function animate() {

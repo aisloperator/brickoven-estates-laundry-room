@@ -21,7 +21,11 @@ Click (or tap) any washer or dryer: a dog walks in through the doorway, opens it
 
 Somewhere in the room is a messy pile of books — click (or tap) any one of them and a book flies in and opens up to fill most of the screen. Click again anywhere to close it.
 
-Each machine also shows a live status floating in front of it: a green checkmark if it's idle, or its remaining run time in red minutes if it's running. Since there's no real status feed yet, click "Random Fake Data" (top-right) to randomize all 10 machines for a demo.
+Each machine also shows a live status floating in front of it: a green checkmark if it's idle, its remaining run time in red minutes if it's running, or a red X if its status can't be determined. With no `?data=` link (see below), click "Random Fake Data" (top-right) to randomize all 10 machines for a demo.
+
+### Real status data
+
+Loading the page as `index.html?data=<url>`, where `<url>` is a CSC Go QR-code URL (the kind printed on a sticker on a real CSC Go washer/dryer, `https://mycscgo.com/qr/<code>`), replaces "Random Fake Data" with an "Update Real Data" button that loads and displays that laundry room's actual machine statuses, and reloads them again on every press.
 
 ## Viewing it
 
