@@ -1581,10 +1581,14 @@
       ctx.stroke();
     } else {
       ctx.fillStyle = '#ff1a1a';
+      // Gap between the two lines' baselines is 46 (about half the
+      // original 92), and both are shifted so the pair is still centered
+      // vertically in the canvas rather than just shrinking toward the
+      // old number position.
       ctx.font = 'bold 130px Arial, sans-serif';
-      ctx.fillText(String(minutes), STATUS_CANVAS_W / 2, 140);
+      ctx.fillText(String(minutes), STATUS_CANVAS_W / 2, 161);
       ctx.font = 'bold 34px Arial, sans-serif';
-      ctx.fillText('minutes', STATUS_CANVAS_W / 2, 232);
+      ctx.fillText('minutes', STATUS_CANVAS_W / 2, 207);
     }
   }
 
