@@ -4,6 +4,8 @@ An interactive 3D preview of the Brickoven Estates apartment building laundry ro
 
 **Live:** https://www.aisloperator.com/brickoven-estates-laundry-room/
 
+Created by [AI Sloperator](https://www.aisloperator.com/) and Claude Code, July 2026. No license is given.
+
 ## What's here
 
 `index.html` is a single, self-contained HTML file — Three.js and OrbitControls are inlined directly into the page, so it runs entirely offline in a browser with no build step, server, or network access required.
