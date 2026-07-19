@@ -1016,7 +1016,7 @@
   function buildFlameTongues(scaleMul) {
     scaleMul = scaleMul || 1;
     var count = 8;
-    var colors = [0xd22600, 0xff7a00];
+    var colors = [0xd22600, 0xff7a00, 0xffd400];
     var group = new THREE.Group();
     var cones = [];
     for (var i = 0; i < count; i++) {
@@ -1026,7 +1026,7 @@
       var offZ = Math.sin(angle) * ringR;
       var r = (0.045 + Math.random() * 0.02) * scaleMul;
       var h = (0.36 + Math.random() * 0.2) * scaleMul;
-      var mat = new THREE.MeshBasicMaterial({ color: colors[i % 2], transparent: true, opacity: 0.88, depthWrite: false });
+      var mat = new THREE.MeshBasicMaterial({ color: colors[i % 3], transparent: true, opacity: 0.88, depthWrite: false });
       var cone = new THREE.Mesh(new THREE.ConeGeometry(r, h, 8), mat);
       cone.position.set(offX, h / 2, offZ);
       cone.renderOrder = i;
@@ -1047,7 +1047,7 @@
   // same direction from the same spot.
   function buildFlameSpray(count, scaleMul) {
     scaleMul = scaleMul || 1;
-    var colors = [0xd22600, 0xff7a00];
+    var colors = [0xd22600, 0xff7a00, 0xffd400];
     var maxSpread = 0.5; // radians of deviation from straight-ahead
     var group = new THREE.Group();
     var cones = [];
@@ -1061,7 +1061,7 @@
       );
       var r = (0.045 + Math.random() * 0.02) * scaleMul;
       var h = (0.3 + Math.random() * 0.22) * scaleMul;
-      var mat = new THREE.MeshBasicMaterial({ color: colors[i % 2], transparent: true, opacity: 0.88, depthWrite: false });
+      var mat = new THREE.MeshBasicMaterial({ color: colors[i % 3], transparent: true, opacity: 0.88, depthWrite: false });
       var cone = new THREE.Mesh(new THREE.ConeGeometry(r, h, 8), mat);
       // ConeGeometry's local axis is +Y; align that with the random spray
       // direction, then push it out along that same direction so the
