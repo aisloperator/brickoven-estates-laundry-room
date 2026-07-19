@@ -1569,7 +1569,20 @@
     ctx.clearRect(0, 0, STATUS_CANVAS_W, STATUS_CANVAS_H);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    if (minutes <= 0) {
+    if (minutes < 0) {
+      // Negative (currently only -1, an error/unknown-status placeholder
+      // fed in by "Random Fake Data") reads as a red X rather than either
+      // the idle checkmark or a running-machine minutes count.
+      ctx.strokeStyle = '#ff1a1a';
+      ctx.lineWidth = 28;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(62, 98);
+      ctx.lineTo(194, 230);
+      ctx.moveTo(194, 98);
+      ctx.lineTo(62, 230);
+      ctx.stroke();
+    } else if (minutes === 0) {
       ctx.strokeStyle = '#22ff33';
       ctx.lineWidth = 28;
       ctx.lineCap = 'round';
@@ -1638,14 +1651,20 @@
     d.mesh.visible = true;
   }
 
-  // 0.5 chance a machine reads idle (0 minutes); otherwise a random run
-  // length — washers 1-35 minutes, dryers 0-60 (dryers can independently
-  // land on 0 from this branch too, on top of the shared 0.5 idle chance,
+  // 1/10 chance a machine reads -1 (error/unknown status, shown as a red
+  // X); otherwise, 0.5 chance it reads idle (0 minutes), otherwise a random
+  // run length — washers 1-35 minutes, dryers 0-60 (dryers can independently
+  // land on 0 from that branch too, on top of the shared 0.5 idle chance,
   // exactly as specified).
   function randomFakeData() {
     for (var num = 1; num <= 10; num++) {
       var isWasher = num <= 5;
-      var minutes = Math.random() < 0.5 ? 0 : (isWasher ? (1 + Math.floor(Math.random() * 35)) : Math.floor(Math.random() * 61));
+      var minutes;
+      if (Math.random() < 0.1) {
+        minutes = -1;
+      } else {
+        minutes = Math.random() < 0.5 ? 0 : (isWasher ? (1 + Math.floor(Math.random() * 35)) : Math.floor(Math.random() * 61));
+      }
       setMachineMinutes(num, minutes);
     }
   }
