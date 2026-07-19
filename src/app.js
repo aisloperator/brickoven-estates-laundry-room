@@ -482,7 +482,16 @@
     // Only the round-door style is a front-load washer (dryers use 'rect')
     // — everyone else gets a bigger label with no "FRONT-LOADING" subtitle.
     var isFrontLoadWasher = doorStyle !== 'rect';
-    var decal = decalPlane(width * 0.8, panelH * 0.7, label, isFrontLoadWasher, isFrontLoadWasher ? 46 : 58);
+    // Decal height is derived from the panel's *base* proportional height,
+    // not the (possibly extraPanelH-inflated) panelH used for the panel box
+    // itself: createLogoTexture's canvas is a fixed 512x128 aspect, so
+    // sizing the decal plane off the taller panelH stretched its text
+    // vertically once extraPanelH started adding real height on top. Basing
+    // it on the plain proportional height instead keeps the decal's aspect
+    // ratio — and so its rendered font size — matching every other decal,
+    // regardless of how tall the panel itself grows; it just centers with
+    // more white margin above/below on a taller panel.
+    var decal = decalPlane(width * 0.8, height * 0.16 * 0.7, label, isFrontLoadWasher, isFrontLoadWasher ? 46 : 58);
     decal.position.set(0, height - panelH / 2 - 0.03, panelZ + panelThickness / 2 + 0.005);
     g.add(decal);
 
