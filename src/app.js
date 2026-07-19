@@ -1509,10 +1509,10 @@
   });
   var rightPageMat = new THREE.MeshBasicMaterial({
     map: createPosterTexture('#f0e6c8', '#cbb98f', [
-      { text: 'You can also leave some', y: 95, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'small free items on the', y: 129, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'far corner of the', y: 163, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'countertop, next to the', y: 197, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'You can also leave free', y: 95, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'small, non-clothing', y: 129, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'items on the far corner', y: 163, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'of the countertop, next', y: 197, color: '#2a2216', font: PAGE_FONT_SMALL },
       { text: 'bookshelves.', y: 231, color: '#2a2216', font: PAGE_FONT_SMALL },
       { text: 'Cambridge convention is', y: 281, color: '#2a2216', font: PAGE_FONT_SMALL },
       { text: 'to put usable unwanted', y: 315, color: '#2a2216', font: PAGE_FONT_SMALL },
