@@ -1493,21 +1493,32 @@
   // own canvas 1:1, so the page doesn't stretch its texture.
   var pageW0 = 1, pageH0 = pageW0 * (512 / 384);
   var PAGE_FONT = 'bold 26px Georgia, serif';
+  // The right page carries two paragraphs' worth of text (roughly twice the
+  // left page's line count), so it uses a smaller font and tighter line
+  // spacing than the left page to still fit within the page height.
+  var PAGE_FONT_SMALL = 'bold 20px Georgia, serif';
   var leftPageMat = new THREE.MeshBasicMaterial({
     map: createPosterTexture('#f0e6c8', '#cbb98f', [
-      { text: 'Books in the laundry', y: 164, color: '#2a2216', font: PAGE_FONT },
-      { text: "room's free corner", y: 210, color: '#2a2216', font: PAGE_FONT },
-      { text: 'are free. You can', y: 256, color: '#2a2216', font: PAGE_FONT },
-      { text: 'also donate books', y: 302, color: '#2a2216', font: PAGE_FONT },
-      { text: 'here.', y: 348, color: '#2a2216', font: PAGE_FONT }
+      { text: 'Books and videos in', y: 141, color: '#2a2216', font: PAGE_FONT },
+      { text: "the laundry room's", y: 187, color: '#2a2216', font: PAGE_FONT },
+      { text: 'bookshelves corner', y: 233, color: '#2a2216', font: PAGE_FONT },
+      { text: 'are free. You can', y: 279, color: '#2a2216', font: PAGE_FONT },
+      { text: 'also leave books', y: 325, color: '#2a2216', font: PAGE_FONT },
+      { text: 'and videos here.', y: 371, color: '#2a2216', font: PAGE_FONT }
     ])
   });
   var rightPageMat = new THREE.MeshBasicMaterial({
     map: createPosterTexture('#f0e6c8', '#cbb98f', [
-      { text: 'The Cambridge Public', y: 187, color: '#2a2216', font: PAGE_FONT },
-      { text: 'Library is a great', y: 233, color: '#2a2216', font: PAGE_FONT },
-      { text: 'resource, within', y: 279, color: '#2a2216', font: PAGE_FONT },
-      { text: 'walking distance.', y: 325, color: '#2a2216', font: PAGE_FONT }
+      { text: 'You can also leave some', y: 95, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'small free items on the', y: 129, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'far corner of the', y: 163, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'countertop, next to the', y: 197, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'bookshelves.', y: 231, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'Cambridge convention is', y: 281, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'to put usable unwanted', y: 315, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'household items on the', y: 349, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'curb for a passerby to', y: 383, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'reuse.', y: 417, color: '#2a2216', font: PAGE_FONT_SMALL }
     ])
   });
 
