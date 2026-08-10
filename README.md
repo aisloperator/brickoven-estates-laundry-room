@@ -46,7 +46,3 @@ open index.html        # macOS
 | Scroll wheel / pinch | Zoom |
 | Right drag / two-finger drag | Pan |
 | Click / tap a machine | Play the dog animation |
-
-## Status
-
-This is an early preview. More features are coming soon.
