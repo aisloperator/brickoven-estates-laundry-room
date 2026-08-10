@@ -34,8 +34,8 @@ Loading the page as `index.html?data=<url>`, where `<url>` is a CSC Go QR-code U
 Open `index.html` directly in Chrome, Firefox, or Safari — double-click the file or run:
 
 ```sh
-open index.html        # macOS
 xdg-open index.html    # Linux
+open index.html        # macOS
 ```
 
 ### Controls
