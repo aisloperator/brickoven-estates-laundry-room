@@ -17,6 +17,14 @@
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // Shadows only need to be recomputed on frames that actually render (see
+  // the render-on-demand `needsRender` flag near the render loop below) —
+  // autoUpdate defaults to true, which would redo the 2048x2048 shadow pass
+  // every requestAnimationFrame tick even while the scene is completely
+  // static. needsUpdate is flipped back on per-frame, only on frames that
+  // are actually rendering.
+  renderer.shadowMap.autoUpdate = false;
+  renderer.shadowMap.needsUpdate = true;
   if (renderer.outputEncoding !== undefined) renderer.outputEncoding = THREE.sRGBEncoding;
   if (renderer.physicallyCorrectLights !== undefined) renderer.physicallyCorrectLights = false;
 
@@ -482,6 +490,7 @@
     drawStatusCanvas(d.ctx, minutes);
     d.tex.needsUpdate = true;
     d.mesh.visible = true;
+    needsRender = true;
   }
 
   // 1/10 chance a machine reads -1 (error/unknown status, shown as a red
@@ -1989,12 +1998,25 @@
   controls.screenSpacePanning = true;
   controls.update();
 
+  // Render-on-demand: the scene is static almost all the time (idle orbit,
+  // no machine/book animation running), so unconditionally calling
+  // renderer.render() every requestAnimationFrame tick — recomputing the
+  // 2048x2048 PCFSoftShadowMap included — burns CPU/GPU for no visible
+  // change. needsRender starts true so the first frame still paints; it's
+  // set again whenever something that actually changes pixels happens:
+  // OrbitControls' own 'change' event (covers both active dragging and its
+  // damping settling afterward), a window resize, a dog-show/book-overlay
+  // step running, or a status display being (re)drawn.
+  var needsRender = true;
+  controls.addEventListener('change', function () { needsRender = true; });
+
   // ---------- resize ----------
   function resize() {
     var w = window.innerWidth, h = window.innerHeight;
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, true);
+    needsRender = true;
   }
   window.addEventListener('resize', resize);
   resize();
@@ -2023,9 +2045,15 @@
   function animate() {
     requestAnimationFrame(animate);
     controls.update();
+    var animating = (sequencer && !sequencer.done) || (bookSequencer && !bookSequencer.done);
+    if (animating) needsRender = true;
     if (sequencer && !sequencer.done) sequencer.tick(performance.now());
     if (bookSequencer && !bookSequencer.done) bookSequencer.tick(performance.now());
-    renderer.render(scene, camera);
+    if (needsRender) {
+      renderer.shadowMap.needsUpdate = true;
+      renderer.render(scene, camera);
+      needsRender = false;
+    }
   }
   animate();
 
