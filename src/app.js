@@ -256,13 +256,14 @@
   }
 
   function donationPosterTexture() {
-    var green = 'bold 26px Arial, sans-serif';
+    var green = POSTER_BOLD_32;
     return createPosterTexture('#e3f5df', '#9dcf94', [
-      { text: 'Unwanted clothes can', y: 186, color: '#155c2e', font: green },
-      { text: 'be donated via', y: 224, color: '#155c2e', font: green },
-      { text: 'Helpsy.com pickup,', y: 262, color: '#155c2e', font: green },
-      { text: 'neighborhood donation', y: 300, color: '#155c2e', font: green },
-      { text: 'boxes, or at Goodwill.', y: 338, color: '#155c2e', font: green }
+      { text: 'Unwanted clothes', y: 102, color: '#155c2e', font: green },
+      { text: 'can be donated via', y: 147, color: '#155c2e', font: green },
+      { text: 'Helpsy.com pickup,', y: 192, color: '#155c2e', font: green },
+      { text: 'neighborhood', y: 237, color: '#155c2e', font: green },
+      { text: 'donation boxes, or', y: 282, color: '#155c2e', font: green },
+      { text: 'at Goodwill.', y: 327, color: '#155c2e', font: green }
     ], function (ctx) {
       drawHeart(ctx, 192, 400, 70, '#1c6b38');
     });
