@@ -2917,7 +2917,7 @@
   // The right page carries two paragraphs' worth of text (more lines than
   // the left page), so it uses a smaller font and tighter line spacing than
   // the left page to still fit within the page height.
-  var PAGE_FONT_SMALL = 'bold 20px Georgia, serif';
+  var PAGE_FONT_SMALL = 'bold 18px Georgia, serif';
   var leftPageMat = new THREE.MeshBasicMaterial({
     map: createPosterTexture('#f0e6c8', '#cbb98f', [
       { text: 'Books and videos in', y: 106, color: '#2a2216', font: PAGE_FONT },
@@ -2931,19 +2931,18 @@
   });
   var rightPageMat = new THREE.MeshBasicMaterial({
     map: createPosterTexture('#f0e6c8', '#cbb98f', [
-      { text: 'You can also leave free', y: 54, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'small, non-clothing', y: 88, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'items on the corner of', y: 122, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'the countertop next to', y: 156, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'the bookshelves, if', y: 190, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: "there's room.", y: 224, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: "And it's a local", y: 274, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'tradition to put usable', y: 308, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'unwanted household', y: 342, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'items on the curb, for', y: 376, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'a passerby to reuse.', y: 410, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'Clothing is best', y: 460, color: '#2a2216', font: PAGE_FONT_SMALL },
-      { text: 'donated.', y: 494, color: '#2a2216', font: PAGE_FONT_SMALL }
+      { text: 'You can also leave free', y: 88, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'small, non-clothing items', y: 118, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'on the corner of the', y: 148, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'countertop next to the', y: 178, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: "bookshelves, if there's", y: 208, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'room.', y: 238, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: "And it's a local tradition", y: 282, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'to put usable unwanted', y: 312, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'household items on the', y: 342, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'curb, for a passerby to', y: 372, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'reuse.', y: 402, color: '#2a2216', font: PAGE_FONT_SMALL },
+      { text: 'Clothing is best donated.', y: 446, color: '#2a2216', font: PAGE_FONT_SMALL }
     ])
   });
 
