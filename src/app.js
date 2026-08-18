@@ -258,10 +258,9 @@
   function donationPosterTexture() {
     var green = 'bold 26px Arial, sans-serif';
     return createPosterTexture('#e3f5df', '#9dcf94', [
-      { text: 'Unwanted clothes can', y: 148, color: '#155c2e', font: green },
-      { text: 'be donated via', y: 186, color: '#155c2e', font: green },
-      { text: 'Helpsy.com or', y: 224, color: '#155c2e', font: green },
-      { text: 'Boomerangs pickup,', y: 262, color: '#155c2e', font: green },
+      { text: 'Unwanted clothes can', y: 186, color: '#155c2e', font: green },
+      { text: 'be donated via', y: 224, color: '#155c2e', font: green },
+      { text: 'Helpsy.com pickup,', y: 262, color: '#155c2e', font: green },
       { text: 'neighborhood donation', y: 300, color: '#155c2e', font: green },
       { text: 'boxes, or at Goodwill.', y: 338, color: '#155c2e', font: green }
     ], function (ctx) {
