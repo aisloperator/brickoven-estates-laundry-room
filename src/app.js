@@ -2057,16 +2057,4 @@
   }
   animate();
 
-  // ---------- instructions fade ----------
-  var hint = document.getElementById('hint');
-  if (hint) {
-    var faded = false;
-    function fadeHint() {
-      if (faded) return;
-      faded = true;
-      hint.style.opacity = '0';
-    }
-    canvas.addEventListener('pointerdown', function () { setTimeout(fadeHint, 1200); }, { once: true });
-    setTimeout(fadeHint, 9000);
-  }
 })();
